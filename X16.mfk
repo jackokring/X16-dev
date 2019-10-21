@@ -1,0 +1,316 @@
+
+//Draw string in Area
+//This will define the ariea to draw x1,y1,x2,y2
+//The Color will then be set for the Vera Color Field
+//The newLineChar will cause a new line to be created otherwise will hard wrap at
+//end of display area
+//The strWord is a point to a Byte arrary
+void V_PutString(byte x1,byte y1,byte x2,byte y2,byte color,byte newLineChar,word strWord)
+{
+
+    //Pointer go to Zero Page and can be overwriten so we need 
+    //to convert from a word to a pointer
+    //then set them to a zero page unused are
+    pointer str @$00FE
+    str = strWord
+
+
+    byte lx
+    byte ly
+    lx = x1
+    ly = y1
+
+    //The location in the str
+    word s_spot
+    s_spot = 0
+
+    //Setup Auto Incremenet to 1
+    poke($9F22,$10)
+    //Set starting position
+    poke($9F20,lx+lx)
+    poke($9F21,ly)
+
+    while (true) {
+        if (lx > x2)
+        {
+            //Reset the position line
+            lx = x1
+            ly = ly+1
+
+            poke($9F20,lx+lx)
+            poke($9F21,ly)
+        }
+
+        if (ly > y2)
+        {
+            break
+        }
+
+    label TestStringLocation
+
+        //String End lets exist
+        if (str[s_spot] == 0)
+        {
+            break;
+        }
+
+
+        //New Line Char
+        if (str[s_spot] == newLineChar)
+        {
+            lx = x1
+            ly = ly+1
+
+            poke($9F20,lx+lx)
+            poke($9F21,ly)
+            
+            //Test of another return or end of string
+            s_spot = s_spot + 1
+            goto TestStringLocation
+        }
+
+        //Write data usign auto Incr
+        poke($9F23,str[s_spot])
+        poke($9F23,color)
+
+
+        lx = lx +1
+        s_spot = s_spot + 1
+
+
+    }
+}
+
+//This will set the area specified in x1,y1,x2,y2
+//To draw one square in the Top left 0,0,0,0
+//To draw whole screen(80 Columns) 0,0,79,59
+//The Data and Color fields are then populated in 
+//the VERA Memory Space.  
+void V_SetArea(byte x1,byte y1,byte x2,byte y2,byte data,byte color)
+{
+    byte lx
+    byte ly
+    lx = x1
+    ly = y1
+
+    //Setup Auto Incremenet to 1
+    poke($9F22,$10)
+
+    //Set starting position
+    poke($9F20,lx+lx)
+    poke($9F21,ly)
+
+    while (true) {
+        if (lx > x2)
+        {
+            //Reset the position line
+            lx = x1
+            ly = ly+1
+
+            poke($9F20,lx+lx)
+            poke($9F21,ly)
+        }
+
+        //If we are past the last line then we have finished
+        if (ly > y2)
+        {
+            break
+        }
+
+        //Write data usign auto Incr
+        poke($9F23,data)
+        poke($9F23,color)
+
+        //Go to the next tile
+        lx = lx +1
+    }
+
+}
+
+//Thi will clear one line starting at x,y
+//This will also have a allowed set of characters in the allow arrary
+//Then the string typed in will be put into the strDataWord arrary
+//TODO
+// Fixed Background Color is being used
+// Support left and right keys
+// Delete key if the X16 has this,  currently only backspace is added
+// Provide cursor(Going to use sprite to achieve this)
+void G_GetStringLine(byte x,byte y,byte ln,pointer allow,word strDataWord)
+{
+    //Pointer go to Zero Page and can be overwriten so we need 
+    //to convert from a word to a pointer
+    //then set them to a zero page unused are
+    pointer strData @$00FE
+    strData = strDataWord
+
+    byte key
+
+    //clear Existing Screen Location
+    V_SetArea(x,y,x+ln-1,y,32,123)
+
+    
+    byte lp
+    byte allowLength 
+    allowLength = strzlen(allow)
+
+    byte allowFound
+    
+    key = X_KeyboardGetState()
+    byte spot
+    spot = 0
+    while (true)
+    {
+        key = X_KeyboardGetState()
+        if (key != 0)
+        {
+
+            //Backspace
+            if (key == 20)
+            {
+                if (spot > 0)
+                {
+                    strData[spot] = 0
+                    spot = spot -1
+                    strData[spot] = 0
+                    key = 0
+                }
+            }
+            //Escape Key
+            else if (key == 3)
+            {
+                strData[0]=0
+                return
+            }
+            else if (key == 13) 
+            {
+                //Return Key lets return the string
+                return
+            }
+            //Good Key
+            else
+            {
+                if (spot < ln)
+                {
+                    
+                    //Check for Allowed Characters
+                    allowFound = 0
+                    if (allowLength > 0)
+                    {
+                        for lp,0,until,allowLength 
+                        {
+                            if (allow[lp] == key)
+                            {
+                                allowFound = 1
+                                break
+                            }
+                        }
+                    } else
+                    {
+                        allowFound = 1
+                    }
+                    
+                    if (allowFound == 1)
+                    {
+                        strData[spot] = key
+                        spot = spot + 1
+                        strData[spot] = 0
+                    }
+                    
+                }
+            }
+            
+            V_SetArea(x,y,x+ln-1,y,32,123)
+            V_PutString(x,y,x+ln,y,123,0,strData)
+        }
+    }
+
+    return
+}
+
+
+//Gets random number(Inclusive) between loNum and HiHum
+//Sanity Checks on invalid ranges will return HiNum
+//The rand_seed Millfork variable must be set prior to calling
+//this function
+byte U_RandBetween(byte LoNum,byte HiNum)
+{
+    byte randNum
+
+    randNum = rand()
+
+    //This is not a random number it is fixed
+    if (HiNum == LoNum)
+    {
+        return HiNum
+    }
+
+    //Invalid return the Hi Num 
+    if (HiNum < LoNum)
+    {
+        return HiNum
+    }
+
+    if (randNum > HiNum)
+    {
+        randNum = randNum %% (HiNum - LoNum +1)
+        randNum = randNum + LoNum
+        return randNum;
+    } else if (randNum < LoNum)
+    {
+        randNum = randNum %% (HiNum - LoNum +1)
+        randNum = randNum + LoNum
+        return randNum
+    } else
+    {
+        //We are in the good range lets return this value
+        return randNum
+    }
+    
+    return HiNum
+
+}
+
+//This needs to be improved
+//If not called the Millfork Random module does not work
+//Will return 0 until this has been set
+void U_SetRandSeed()
+{
+    rand_seed = 34
+}
+
+//Allow basic "Pause"
+void U_PauseCycle(word CycleCount)
+{
+    word pause
+    pause = 1
+    while (pause < CycleCount)
+    {
+        pause  = pause + 1
+    }
+}
+
+
+
+//Get Keyboard returns - if no key selected
+//does not hadle multiple key presses.  EG Ctrl-C
+byte K_KeyboardGetState() {
+    byte result
+    asm {
+        JSR $FFE4 
+        STA result
+    }
+    return result
+}
+
+//Swap Mode Size
+asm void K_ModeSwap() @$FF5F extern
+
+//Get the Mode Size will either be 40 or 80
+byte K_ModeGet() {
+    byte result
+    asm {
+        LDA $D9
+        STA result
+    }
+    return result
+}
