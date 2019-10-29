@@ -2,6 +2,9 @@
 
 // Useful routines not specific to anything but always useful
 
+//===========================================================
+// BANKING
+//===========================================================
 void kernal() {
     poke($9F60, 0)
 }
@@ -10,11 +13,22 @@ void BASIC() {
     poke($9F60, 4) //basic
 }
 
+byte ramBank(byte b) {
+    byte old
+    old = peek($9F61)
+    poke($9F61, b)
+    return old
+}
+
+//===========================================================
+// INIT AND CLEAN
+//===========================================================
 void initGeneral() {
     kernal()
     ramBank(0)
     poke($9F25, 0) //init VERA 0
-
+    vinit(512, 448, 0) //set visible area
+    
 }
 
 void shutdownGeneral() {
@@ -25,13 +39,9 @@ void shutdownGeneral() {
     }
 }
 
-byte ramBank(byte b) {
-    byte old
-    old = peek($9F61)
-    poke($9F61, b)
-    return old
-}
-
+//===========================================================
+// VERA LOW LEVEL VIDEO
+//===========================================================
 inline byte signlo(byte b) {
     if b < 0 {
         return 1
@@ -55,3 +65,28 @@ void voke(word w) {
     poke($9F23, w.hi) //and the high byte
 }
 
+void bvoke(byte b) {
+    poke($9F23, b)
+}
+
+//===========================================================
+// VERA HIGH LEVEL VIDEO
+//===========================================================
+void vinit(word w, word h, byte bord) {
+    caddr(0)
+    peek($9F23) //read over
+    voke($8080) //basic 1:1 pixel clock scaling (maybe later)
+    bvoke(bord) //set border
+    word hw = (640 - w) >> 1
+    bvoke(hw.lo) //start
+    byte hibit = ((hw.hi + w.hi) << 2) + hw.hi//put high bit in
+    bvoke(hw.lo + w.lo) //stop modulo
+    hw = (480 - h) >> 1
+    word irq = hw + h
+    bvoke(hw.lo) //start
+    bvoke(hw.lo + h.lo) //stop
+    hibit = ((((hw.hi + h.hi) << 1) + hw.hi) << 4) + hibit
+    bvoke(hibit) //the high bits of the range
+    //IRQ?
+    voke(irq) //set irq line
+}
