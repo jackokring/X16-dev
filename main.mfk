@@ -1,0 +1,10 @@
+// THE MAIN FILE
+
+// Does what eventually needs doing
+
+import baselib // base library
+
+void main() {
+    initGeneral() //make a base kernal state
+    
+}

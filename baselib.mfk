@@ -1,0 +1,57 @@
+// THE BASE LIBRARY
+
+// Useful routines not specific to anything but always useful
+
+void kernal() {
+    poke($9F60, 0)
+}
+
+void BASIC() {
+    poke($9F60, 4) //basic
+}
+
+void initGeneral() {
+    kernal()
+    ramBank(0)
+    poke($9F25, 0) //init VERA 0
+
+}
+
+void shutdownGeneral() {
+    BASIC()
+
+    asm {
+        jmp ($FFFC) //reset
+    }
+}
+
+byte ramBank(byte b) {
+    byte old
+    old = peek($9F61)
+    poke($9F61, b)
+    return old
+}
+
+inline byte signlo(byte b) {
+    if b < 0 {
+        return 1
+    }
+    return 0
+}
+
+void vaddr(word low) {//for main display word aligned
+    poke($9F20, low.lo << 1) 
+    poke($9F21, (low.hi << 1) | signlo(low.lo))
+    poke($9F22, signlo(low.hi) | $10) //128 kB high bit step of 1
+}
+
+void caddr(word low) {//for palette and other VERA
+    vaddr(low)
+    poke($9F22, $1F) //and access all high ram aligned word
+}
+
+void voke(word w) {
+    poke($9F23, w.lo) //poke VERA port
+    poke($9F23, w.hi) //and the high byte
+}
+
