@@ -28,7 +28,7 @@ void initGeneral() {
     ramBank(0)
     poke($9F25, 0) //init VERA 0
     vinit(512, 448, 0) //set visible area
-    
+
 }
 
 void shutdownGeneral() {
@@ -40,11 +40,18 @@ void shutdownGeneral() {
 }
 
 //===========================================================
-// VERA LOW LEVEL VIDEO
+// VERA LOW LEVEL VIDEO (uses 17:1 bit aligned word refs)
 //===========================================================
 inline byte signlo(byte b) {
     if b < 0 {
         return 1
+    }
+    return 0
+}
+
+inline byte lsbhi(byte b) {
+    if (b & 1) != 0 {
+        return $80
     }
     return 0
 }
@@ -69,6 +76,42 @@ void bvoke(byte b) {
     poke($9F23, b)
 }
 
+const byte geo8by8 = $0
+const byte geo16by16 = $3
+const byte geoMap32by32 = $0
+const byte geoMap64by64 = $A
+
+const byte geoBig = geoMap32by32 + ((geo16by16) << 4)
+const byte geoSmall = geoMap64by64 + ((geo8by8) << 4)
+
+const byte geo4bppMap = $3
+
+void setlayer(byte layer, byte mode, byte geo, word map, word tile) {
+    word base = $1000
+    if layer != 0 {
+        base += $800
+    }
+    caddr(base) //ready
+    bvoke((mode << 5) + 1) //set
+    bvoke(geo)
+    bvoke(((map.lo) >> 1) + lsbhi(map.hi))
+    bvoke(map.hi)
+    bvoke(((tile.lo) >> 1) + lsbhi(tile.hi))
+    bvoke(tile.hi)
+    voke(0) //scroll H
+    voke(0) //scroll V
+}
+
+void setscroll(byte layer, word x, word y) {
+    word base = $1000 + $6 //directly to scroll registers
+    if layer != 0 {
+        base += $800
+    }
+    caddr(base)
+    voke(x)
+    voke(y)
+}
+
 //===========================================================
 // VERA HIGH LEVEL VIDEO
 //===========================================================
@@ -90,3 +133,10 @@ void vinit(word w, word h, byte bord) {
     //IRQ?
     voke(irq) //set irq line
 }
+
+void setpal(byte idx, byte r, byte g, byte b) {
+    caddr($800 + idx) //word aligned
+    bvoke((r << 4) & g)
+    bvoke(b) //and maybe alpha later?
+}
+
