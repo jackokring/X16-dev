@@ -1,0 +1,47 @@
+//THE INPUT LIBRAY
+
+//===========================================================
+// JOYPAD
+//===========================================================
+byte readJoy() {
+    asm {
+        jsr $FF6E
+    }
+    return direction(0) //might as well return the default control
+}
+
+// 5, 6, 7
+// 4, 8, 0
+// 3, 2, 1
+const byte DIR_R = 0
+const byte DIR_RD = 1
+const byte DIR_D = 2
+const byte DIR_LD = 3
+const byte DIR_L = 4
+const byte DIR_LU = 5
+const byte DIR_U = 6
+const byte DIR_RU = 7
+const byte DIR_X = 8
+
+const array(byte) udlrTable = [
+    DIR_X, DIR_R, DIR_L, DIR_X,
+    DIR_D, DIR_RD, DIR_LD, DIR_X,
+    DIR_U, DIR_RU, DIR_LU, DIR_X,
+    DIR_X, DIR_X, DIR_X, DIR_X
+]
+
+const byte BUT_A = $80
+const byte BUT_B = $40
+const byte BUT_SEL = $20
+const byte BUT_STA = $10
+//JOY1 ($02BC-$02BE) and JOY2 ($02BF-$02C1)
+//| A | B |SEL|STA|UP |DN |LT |RT |
+byte direction(byte num) {
+    byte val
+    val = peek($02BC)
+    if num == 0 {
+        val = peek($02BF)
+    }
+    //and buttons as usual
+    return udlrTable[val & $F] | (val & $F0)
+}

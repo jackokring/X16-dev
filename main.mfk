@@ -3,8 +3,20 @@
 // Does what eventually needs doing
 
 import baselib // base library
+import input //the input library
 
 void main() {
+    byte running
+    running = 1
+    byte joy1
+    byte joy2
     initGeneral() //make a base kernal state
-    
+    while running != 0 {
+        joy1 = readJoy()
+        joy2 = direction(1)
+        if (joy1 & BUT_SEL) != 0 {
+            running = 0 //exit menu default
+        }
+    }
+    shutdownGeneral()
 }
