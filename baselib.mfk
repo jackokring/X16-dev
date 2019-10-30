@@ -21,6 +21,37 @@ byte ramBank(byte b) {
 }
 
 //===========================================================
+// GFX CONSTANTS AND BASIS
+//===========================================================
+const byte geo8by8 = $0
+const byte geo16by16 = $3
+const byte geoMap32by32 = $0
+const byte geoMap64by64 = $A
+
+const byte geoBig = geoMap32by32 + ((geo16by16) << 4)
+const byte geoSmall = geoMap64by64 + ((geo8by8) << 4)
+
+const byte geo4bppMap = $3
+
+//-----------------------------
+const word bigBaseMap = $0000 //bottom of VRAM
+const word bigSizeMap = 32 * 28 //no *2 as 17:1 address
+const word smallBaseMap = bigBaseMap + bigSizeMap
+const word smallSizeMap = bigSizeMap * 4 //as quad density of tiles
+const word bigBasePix = smallBaseMap + smallSizeMap
+const word bigGlyphStep = 256 >> 2 //div by 4 as 17:1 @ 4bpp
+const word bigSizePix = bigSizeMap * bigGlyphStep
+const word smallBasePix = bigBasePix + bigSizePix
+const word smallGlyphStep = 64 >> 2 //div by 4 as 17:1 @ 4bpp
+//This should be then end of memory
+//Now to align numbering placing big font @ 128+
+//leaving 128 low (0-127) glyph "control codes"
+//This aligns higher glyphs for direction control
+const word bigPixAlign = bigBasePix - 128 * bigGlyphStep
+//There are 24 non printing placing logo in 25-31 char spots
+const word smallPixAlign = smallBasePix - 24 * smallGlyphStep
+
+//===========================================================
 // INIT AND CLEAN
 //===========================================================
 void initGeneral() {
@@ -28,12 +59,16 @@ void initGeneral() {
     ramBank(0)
     poke($9F25, 0) //init VERA 0
     vinit(512, 448, 0) //set visible area
-
+    //initialize layers
+    setLayer(0, geoBig, bigBaseMap, bigPixAlign)
+    //forground text layer
+    setLayer(1, geoSmall, smallBaseMap, smallPixAlign)
 }
 
 void shutdownGeneral() {
     BASIC()
 
+    //not sure about this as it could be used as a BMP loader
     asm {
         jmp ($FFFC) //reset
     }
@@ -76,17 +111,7 @@ void bvoke(byte b) {
     poke($9F23, b)
 }
 
-const byte geo8by8 = $0
-const byte geo16by16 = $3
-const byte geoMap32by32 = $0
-const byte geoMap64by64 = $A
-
-const byte geoBig = geoMap32by32 + ((geo16by16) << 4)
-const byte geoSmall = geoMap64by64 + ((geo8by8) << 4)
-
-const byte geo4bppMap = $3
-
-void setlayer(byte layer, byte mode, byte geo, word map, word tile) {
+void setLayer(byte layer, byte mode, byte geo, word map, word tile) {
     word base = $1000
     if layer != 0 {
         base += $800
@@ -102,7 +127,7 @@ void setlayer(byte layer, byte mode, byte geo, word map, word tile) {
     voke(0) //scroll V
 }
 
-void setscroll(byte layer, word x, word y) {
+void setScroll(byte layer, word x, word y) {
     word base = $1000 + $6 //directly to scroll registers
     if layer != 0 {
         base += $800
@@ -116,10 +141,7 @@ void setscroll(byte layer, word x, word y) {
 // VERA HIGH LEVEL VIDEO
 //===========================================================
 void vinit(word w, word h, byte bord) {
-    caddr(0)
-    peek($9F23) //read over
-    voke($8080) //basic 1:1 pixel clock scaling (maybe later)
-    bvoke(bord) //set border
+    setBorder(bord)
     word hw = (640 - w) >> 1
     bvoke(hw.lo) //start
     byte hibit = ((hw.hi + w.hi) << 2) + hw.hi//put high bit in
@@ -134,7 +156,14 @@ void vinit(word w, word h, byte bord) {
     voke(irq) //set irq line
 }
 
-void setpal(byte idx, byte r, byte g, byte b) {
+void setBorder(byte bord) {
+    caddr(0)
+    peek($9F23) //read over
+    voke($8080) //basic 1:1 pixel clock scaling (maybe later)
+    bvoke(bord) //set border
+}
+
+void setPal(byte idx, byte r, byte g, byte b) {
     caddr($800 + idx) //word aligned
     bvoke((r << 4) & g)
     bvoke(b) //and maybe alpha later?
