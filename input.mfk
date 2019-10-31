@@ -23,6 +23,8 @@ const byte DIR_U = 6
 const byte DIR_RU = 7
 const byte DIR_X = 8
 
+const byte DIR_TXT = 15 //a pseudo direction for compressed map
+
 const array(byte) udlrTable = [
     DIR_X, DIR_R, DIR_L, DIR_X,
     DIR_D, DIR_RD, DIR_LD, DIR_X,
@@ -45,3 +47,7 @@ byte direction(byte num) {
     //and buttons as usual
     return udlrTable[val & $F] | (val & $F0)
 }
+
+//===========================================================
+// FILE OPEN, INPUT AND CLOSE
+//===========================================================
