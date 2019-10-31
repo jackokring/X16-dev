@@ -40,11 +40,14 @@ const word bigBaseMap = $0000 //bottom of VRAM
 const word bigSizeMap = 32 * 28 //no *2 as 17:1 address
 const word smallBaseMap = bigBaseMap + bigSizeMap
 const word smallSizeMap = bigSizeMap * 4 //as quad density of tiles
-const word bigBasePix = smallBaseMap + smallSizeMap
-const word bigGlyphStep = 256 >> 2 //div by 4 as 17:1 @ 4bpp
-const word bigSizePix = bigSizeMap * bigGlyphStep
-const word smallBasePix = bigBasePix + bigSizePix
+
+const word smallBasePix = smallBaseMap + smallSizeMap
 const word smallGlyphStep = 64 >> 2 //div by 4 as 17:1 @ 4bpp
+const word smallSizePix = ((96 * 2) + 32) * smallGlyphStep
+
+const word bigBasePix = smallBasePix + smallSizePix + 4096 //TODO some step
+const word bigGlyphStep = 256 >> 2 //div by 4 as 17:1 @ 4bpp
+
 //This should be then end of memory
 //Now to align numbering placing big font @ 128+
 //leaving 128 low (0-127) glyph "control codes"
@@ -99,6 +102,11 @@ inline byte lsbhi(byte b) {
     return 0
 }
 
+
+inline void skipReg() {
+    peek($9F23)
+}
+
 void vaddr(word low) {//for main display word aligned
     poke($9F20, low.lo << 1) 
     poke($9F21, (low.hi << 1) | signlo(low.lo))
@@ -134,12 +142,10 @@ void setLayer(byte layer, byte mode, byte geo, word map, word tile) {
         base += $800
     }
     caddr(base) //ready
-    bvoke((mode << 5) + 1) //set
+    bvoke((mode << 5) | 1) //set
     bvoke(geo)
-    bvoke(((map.lo) >> 1) + lsbhi(map.hi))
-    bvoke(map.hi)
-    bvoke(((tile.lo) >> 1) + lsbhi(tile.hi))
-    bvoke(tile.hi)
+    voke(map >> 1)
+    voke(tile >> 1)
     voke(0) //scroll H
     voke(0) //scroll V
 }
@@ -180,7 +186,7 @@ void vinit(word w, word h, byte bord) {
 
 void setBorder(byte bord) {
     caddr(0)
-    peek($9F23) //read over
+    skipReg() //read over
     voke($8080) //basic 1:1 pixel clock scaling (maybe later)
     bvoke(bord) //set border
 }
@@ -198,7 +204,8 @@ void clearBigMap() {
     vaddr(bigBaseMap)
     word size
     for size, 128, to, 1023 {//128+768
-        voke(size) //offsets??
+        bvoke(size.lo) //offsets??
+        skipReg() //TODO
     }
 }
 
