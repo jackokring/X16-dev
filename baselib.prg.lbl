@@ -1,0 +1,10 @@
+al 0 .segment_default_bank
+al fa .__zeropage_last
+al fb .__zeropage_end
+al ff .segment_himem_ff_bank
+al 80d .segment_default_heapstart
+al 2000 .segment_himem_00_length
+al 96f3 .segment_default_length
+al 9eff .segment_default_end
+al a000 .segment_himem_00_heapstart
+al bfff .segment_himem_00_end
