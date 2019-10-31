@@ -4,3 +4,4 @@
 // VIDEO TESTS
 //===========================================================
 const bool smallOff = true
+const bool fileReadOff = true

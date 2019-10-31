@@ -11,11 +11,12 @@ void main() {
     byte joy1
     byte joy2
     initGeneral() //make a base kernal state
-    while true { //running != 0
-        //joy1 = readJoy()
+    loadGfx() //load the graphics
+    while running != 0 { //actual right call
+        joy1 = readJoy()
         //joy2 = direction(1)
         if (joy1 & BUT_SEL) == 0 { //selected is zero as and masked
-            running = 0 //exit menu default
+            running = 1 //0 === exit menu default
         }
     }
     shutdownGeneral()

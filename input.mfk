@@ -1,11 +1,13 @@
 //THE INPUT LIBRAY
 
+import setup
+
 //===========================================================
 // JOYPAD
 //===========================================================
 byte readJoy() {
     asm {
-        jsr $FF6E
+        jsr $FF06 //gotjoy
     }
     return direction(0) //might as well return the default control
 }
@@ -51,3 +53,69 @@ byte direction(byte num) {
 //===========================================================
 // FILE OPEN, INPUT AND CLOSE
 //===========================================================
+//$FF90: SETMSG – set verbosity
+//$FFB7: READST – return status byte
+//$FFBA: SETLFS – set LA, FA and SA
+//$FFBD: SETNAM – set filename
+//$FFC0: OPEN – open a channel
+//$FFC3: CLOSE – close a channel
+//$FFC6: CHKIN – set channel for character input
+//$FFC9: CHKOUT – set channel for character output
+//$FFCC: CLRCHN – restore character I/O to screen/keyboard
+//$FFCF: BASIN – get character (CHRIN)
+//$FFD2: BSOUT – write character
+//$FFD5: LOAD – load a file into memory
+//$FFD8: SAVE – save a file from memory
+//$FFE7: CLALL – close all channels
+void fileOpenGfx() {
+    const array(byte) name = "gfx.bmp"
+    const byte low = name.addr.lo
+    const byte high = name.addr.hi
+    const byte size = sizeof(name)
+    asm {
+        LDA #0 //off all printing
+        JSR $FF90 //SETMSG
+        LDA #size //name length
+        LDY #high //string address
+        LDX #low
+        JSR $FFBD //SETNAM
+        LDA #1 //hendle
+        LDX #8 //device intercept flash
+        LDY #255 //no extra command
+        JSR $FFBA //SETLFS
+        JSR $FFC0 //OPEN
+        //prepare for input
+        LDX #1
+        JSR $FFC6 //CHKIN
+    }
+}
+
+byte seqRand = 0
+
+byte fileInput() {
+    byte data
+    asm {
+        JSR $FFCF //CHRIN
+        STA data
+    }
+    if fileReadOff {
+        seqRand = seqRand + 17
+        return seqRand //white? assuming null file zero
+    }
+    return data
+}
+
+void fileSkipChar(word skip) {
+    word i
+    for i, 1, to, skip {
+        fileInput()
+    }
+}
+
+void fileClose() {
+    asm {
+        LDA #1
+        JSR $FFC3 //CLOSE
+        JSR $FFCC //CLRCHN
+    }
+}

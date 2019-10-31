@@ -2,6 +2,7 @@
 
 // Useful routines mainly output video
 import setup
+import input
 
 //===========================================================
 // BANKING
@@ -63,7 +64,7 @@ void initGeneral() {
     vinit(512, 448, 0) //set visible area
     //initialize layers
     setLayer(0, geo4bppMap, geoBig, bigBaseMap, bigPixAlign)
-    clearBigMap(128, 1) //fill with all glyphs
+    clearBigMap() //fill with all glyphs
     //forground text layer
     if not(smallOff) {
         setLayer(1, geo4bppMap, geoSmall, smallBaseMap, smallPixAlign)
@@ -162,12 +163,14 @@ void vinit(word w, word h, byte bord) {
     hw = (640 - w) >> 1
     bvoke(hw.lo) //start
     byte hibit
+    //w -= 1 //seems to be an offset showing one last line
     hibit = ((hw.hi + w.hi) << 2) + hw.hi//put high bit in
     bvoke(hw.lo + w.lo) //stop modulo
     hw = (480 - h) >> 1
     word irq
     irq = hw + h
     bvoke(hw.lo) //start
+    //h -= 1 //yes a last line residual
     bvoke(hw.lo + h.lo) //stop
     hibit = ((((hw.hi + h.hi) << 1) + hw.hi) << 4) + hibit
     bvoke(hibit) //the high bits of the range
@@ -184,26 +187,25 @@ void setBorder(byte bord) {
 
 void setPal(byte idx, byte r, byte g, byte b) {
     caddr($800 + idx) //word aligned
-    bvoke((r << 4) & g)
+    bvoke(lowerNib(r) | g)
     bvoke(b) //and maybe alpha later?
 }
 
 //===========================================================
 // VERA TEST AND UTILITY ROUTINES
 //===========================================================
-void clearBigMap(word init, word inc) {
+void clearBigMap() {
     vaddr(bigBaseMap)
     word size
-    for size,1,to,bigSizeMap {
-        voke(init)
-        init = init + inc
+    for size, 128, to, 1023 {//128+768
+        voke(size) //offsets??
     }
 }
 
 void clearSmallMap(word init, word inc) {
     vaddr(smallBaseMap)
     word size
-    for size,1,to,smallSizeMap {
+    for size, 1, to, smallSizeMap {
         voke(init)
         init = init + inc
     }
@@ -226,4 +228,61 @@ void testBorder() {
     drawStride(151, 1, 151 + 63, 1) //bottom
     drawStride(214, 1, 214 - 13 + 54, -64) //right (268? => 256)
     drawStride(24, 1, 32, -1) //draw a G hook
+}
+
+byte upperNib(byte nib) {
+    return nib >> 4
+}
+
+byte lowerNib(byte nib) {
+    return nib << 4
+}
+
+void loadGfx() {
+    fileOpenGfx()
+    fileSkipChar(14) //header
+    fileSkipChar(40) //BITMAPINFOHEADER (older - NO COMPRESSION)
+    //now at colour table
+    byte colour
+    byte blue
+    byte green
+    byte red
+    for colour, 0, to, 255 {
+        blue = fileInput()
+        green = fileInput()
+        red = fileInput()
+        fileInput() //alpha
+        setPal(colour, upperNib(red), upperNib(green), upperNib(blue))
+    }
+    //now at bitmap (note bottom left to right row first)
+    //load big glyphs
+    byte x
+    word y
+    byte colour2
+    for y, 447, downto, 0 {//size of big glyph section
+        for x, 0, to, 127 {//in quads
+            colour = lowerNib(fileInput() & $F) //nibble mod
+            colour = colour | (fileInput() & $F)
+            colour2 = lowerNib(fileInput() & $F) //nibble mod
+            colour2 = colour2 | (fileInput() & $F)
+            plotPairs(x, y, colour, colour2) //for alignment issue
+        }
+    }//that really should draw all 1024-128 glyph positions with paint
+    //and close
+    fileClose()
+}
+
+void plotPairs(byte qx, word y, byte pair, byte pair2) {//quarter x
+    word base
+    base = bigBasePix
+    word inside
+    inside = (qx & $3) | ((y & $F) << 2) //inside a glyph address
+    word glyph
+    glyph = (qx >> 2) | ((y & $FFF0) << 1) //and glyph number
+    //glyph starts 4 in
+    base = base + (glyph << 6) //for multiply 64 to be 17:1 4bpp
+    base = base + inside //for 17:1 address
+    vaddr(base)
+    bvoke(pair)
+    bvoke(pair2)
 }
