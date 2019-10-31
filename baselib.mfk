@@ -1,6 +1,7 @@
 // THE BASE LIBRARY
 
 // Useful routines mainly output video
+import setup
 
 //===========================================================
 // BANKING
@@ -47,9 +48,10 @@ const word smallGlyphStep = 64 >> 2 //div by 4 as 17:1 @ 4bpp
 //Now to align numbering placing big font @ 128+
 //leaving 128 low (0-127) glyph "control codes"
 //This aligns higher glyphs for direction control
-const word bigPixAlign = bigBasePix - 128 * bigGlyphStep
+//Assume modulo 17 bit encoding
+const word bigPixAlign = bigBasePix - (128 * bigGlyphStep)
 //There are 24 non printing placing logo in 25-31 char spots
-const word smallPixAlign = smallBasePix - 24 * smallGlyphStep
+const word smallPixAlign = smallBasePix - (24 * smallGlyphStep)
 
 //===========================================================
 // INIT AND CLEAN
@@ -61,8 +63,13 @@ void initGeneral() {
     vinit(512, 448, 0) //set visible area
     //initialize layers
     setLayer(0, geo4bppMap, geoBig, bigBaseMap, bigPixAlign)
+    clearBigMap(128, 1) //fill with all glyphs
     //forground text layer
-    setLayer(1, geo4bppMap, geoSmall, smallBaseMap, smallPixAlign)
+    if not(smallOff) {
+        setLayer(1, geo4bppMap, geoSmall, smallBaseMap, smallPixAlign)
+        clearSmallMap(32, 0) //spaces
+        testBorder()
+    }
 }
 
 void shutdownGeneral() {
@@ -100,6 +107,14 @@ void vaddr(word low) {//for main display word aligned
 void caddr(word low) {//for palette and other VERA
     vaddr(low)
     poke($9F22, $1F) //and access all high ram aligned word
+}
+
+void stride(word inc) {//stride over number
+    word val
+    val = peek($9F21):peek($9F20) //maps in low mem
+    val = val + inc
+    poke($9F20, val.lo)
+    poke($9F21, val.hi)
 }
 
 void voke(word w) {
@@ -173,3 +188,42 @@ void setPal(byte idx, byte r, byte g, byte b) {
     bvoke(b) //and maybe alpha later?
 }
 
+//===========================================================
+// VERA TEST AND UTILITY ROUTINES
+//===========================================================
+void clearBigMap(word init, word inc) {
+    vaddr(bigBaseMap)
+    word size
+    for size,1,to,bigSizeMap {
+        voke(init)
+        init = init + inc
+    }
+}
+
+void clearSmallMap(word init, word inc) {
+    vaddr(smallBaseMap)
+    word size
+    for size,1,to,smallSizeMap {
+        voke(init)
+        init = init + inc
+    }
+}
+
+void drawStride(word from, word inc, word end, word mod) {
+    mod = (mod << 1) - 2 //in cells 
+    while from < end { //upto not including
+        //already positioned
+        voke(from)
+        from = from + inc
+        stride(mod)
+    }
+}
+
+void testBorder() {
+    vaddr(smallBaseMap)
+    drawStride(32, 1, 32 + 64, 1) //top
+    drawStride(96, 1, 96 + 55, 64) //left
+    drawStride(151, 1, 151 + 63, 1) //bottom
+    drawStride(214, 1, 213 + 54 - 12, -64) //right (268? => 256)
+    drawStride(24, 1, 32, -1) //draw a G hook
+}
