@@ -224,6 +224,6 @@ void testBorder() {
     drawStride(32, 1, 32 + 64, 1) //top
     drawStride(96, 1, 96 + 55, 64) //left
     drawStride(151, 1, 151 + 63, 1) //bottom
-    drawStride(214, 1, 213 + 54 - 12, -64) //right (268? => 256)
+    drawStride(214, 1, 214 - 13 + 54, -64) //right (268? => 256)
     drawStride(24, 1, 32, -1) //draw a G hook
 }
