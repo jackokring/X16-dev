@@ -4,6 +4,9 @@
 
 import baselib // base library
 import input //the input library
+import setup //various config/mock/test switches
+
+word testUseful
 
 void main() {
     byte running
@@ -11,12 +14,19 @@ void main() {
     byte joy1
     byte joy2
     initGeneral() //make a base kernal state
-    loadGfx() //load the graphics
     while running != 0 { //actual right call
         joy1 = readJoy()
         //joy2 = direction(1)
         if (joy1 & BUT_SEL) == 0 { //selected is zero as and masked
             running = 1 //0 === exit menu default
+        }
+        if not(flashTileOff) {//rotate 1st tile test
+            vaddr(bigBaseMap)
+            voke(testUseful)
+            testUseful += 1
+            if testUseful == -1 {
+                testUseful = 128
+            }
         }
     }
     shutdownGeneral()

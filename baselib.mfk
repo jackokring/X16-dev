@@ -43,9 +43,9 @@ const word smallSizeMap = bigSizeMap * 4 //as quad density of tiles
 
 const word smallBasePix = smallBaseMap + smallSizeMap
 const word smallGlyphStep = 64 >> 2 //div by 4 as 17:1 @ 4bpp
-const word smallSizePix = ((96 * 2) + 32) * smallGlyphStep
+const word smallSizePix = ((96 * 2) + 32 + 8) * smallGlyphStep
 
-const word bigBasePix = smallBasePix + smallSizePix + 4096 //TODO some step
+const word bigBasePix = smallBasePix + smallSizePix
 const word bigGlyphStep = 256 >> 2 //div by 4 as 17:1 @ 4bpp
 
 //This should be then end of memory
@@ -53,9 +53,9 @@ const word bigGlyphStep = 256 >> 2 //div by 4 as 17:1 @ 4bpp
 //leaving 128 low (0-127) glyph "control codes"
 //This aligns higher glyphs for direction control
 //Assume modulo 17 bit encoding
-const word bigPixAlign = bigBasePix - (128 * bigGlyphStep)
+const word bigPixAlign = bigBasePix - (128 * bigGlyphStep) //should be 0
 //There are 24 non printing placing logo in 25-31 char spots
-const word smallPixAlign = smallBasePix - (24 * smallGlyphStep)
+const word smallPixAlign = smallBasePix - (24 * smallGlyphStep) //should be 4096
 
 //===========================================================
 // INIT AND CLEAN
@@ -67,9 +67,13 @@ void initGeneral() {
     vinit(512, 448, 0) //set visible area
     //initialize layers
     setLayer(0, geo4bppMap, geoBig, bigBaseMap, bigPixAlign)
-    clearBigMap() //fill with all glyphs
+    fileOpen()
+    loadHeadPal()
+    loadBigMap() //fill with all glyphs
+
+    fileClose()
     //forground text layer
-    if not(smallOff) {
+    if not(smallOff) {//small layer bypass for tests
         setLayer(1, geo4bppMap, geoSmall, smallBaseMap, smallPixAlign)
         clearSmallMap(32, 0) //spaces
         testBorder()
@@ -86,31 +90,41 @@ void shutdownGeneral() {
 }
 
 //===========================================================
-// VERA LOW LEVEL VIDEO (uses 17:1 bit aligned word refs)
+// BIT MANIPULATION ROUTINES
 //===========================================================
-inline byte signlo(sbyte b) {
+byte hiNibLo(byte nib) {
+    return nib >> 4
+}
+
+byte lowNibHi(byte nib) {
+    return nib << 4
+}
+
+inline byte signLo(sbyte b) {
     if b < 0 {
         return 1
     }
     return 0
 }
 
-inline byte lsbhi(byte b) {
+inline byte lsbHi(byte b) {
     if (b & 1) != 0 {
         return $80
     }
     return 0
 }
 
-
 inline void skipReg() {
     peek($9F23)
 }
 
+//===========================================================
+// VERA LOW LEVEL VIDEO (uses 17:1 bit aligned word refs)
+//===========================================================
 void vaddr(word low) {//for main display word aligned
     poke($9F20, low.lo << 1) 
-    poke($9F21, (low.hi << 1) | signlo(low.lo))
-    poke($9F22, signlo(low.hi) | $10) //128 kB high bit step of 1
+    poke($9F21, (low.hi << 1) | signLo(low.lo))
+    poke($9F22, signLo(low.hi) | $10) //128 kB high bit step of 1
 }
 
 void caddr(word low) {//for palette and other VERA
@@ -120,7 +134,7 @@ void caddr(word low) {//for palette and other VERA
 
 void stride(word inc) {//stride over number
     word val
-    val = peek($9F21):peek($9F20) //maps in low mem
+    val = peek($9F21):peek($9F20) //maps in low mem (for maps only!)
     val = val + inc
     poke($9F20, val.lo)
     poke($9F21, val.hi)
@@ -150,7 +164,7 @@ void setLayer(byte layer, byte mode, byte geo, word map, word tile) {
     voke(0) //scroll V
 }
 
-void setScroll(byte layer, word x, word y) {
+void setScroll(byte layer, word x, word y) { //+ve UP/LEFT
     word base = $1000 + $6 //directly to scroll registers
     if layer != 0 {
         base += $800
@@ -193,20 +207,34 @@ void setBorder(byte bord) {
 
 void setPal(byte idx, byte r, byte g, byte b) {
     caddr($800 + idx) //word aligned
-    bvoke(lowerNib(r) | g)
+    bvoke(lowNibHi(r) | g)
     bvoke(b) //and maybe alpha later?
+}
+
+void plotQuad(byte qx, word y, word quad) {//quarter x
+    word base
+    base = bigBasePix
+    word inside
+    inside = (qx & $3) | ((y & $F) << 2) //inside a glyph address
+    word glyph
+    glyph = ((qx >> 2) | ((y & $FFF0) << 1)) + 128 //and glyph number
+    //glyph starts 4 in
+    base = base + (glyph << 6) //for multiply 64 to be 17:1 4bpp
+    base = base + inside //for 17:1 address
+    vaddr(base)
+    voke(quad)
 }
 
 //===========================================================
 // VERA TEST AND UTILITY ROUTINES
 //===========================================================
-void clearBigMap() {
+void loadBigMap() {
     vaddr(bigBaseMap)
     word size
-    for size, 128, to, 1023 {//128+768
-        bvoke(size.lo) //offsets??
-        skipReg() //TODO
+    for size, 128, to, 1023 {//128 chars + 768 glyphs (as 256 * 3 directions)
+        voke(size) //not in lo range
     }
+    loadGfxBig()
 }
 
 void clearSmallMap(word init, word inc) {
@@ -237,16 +265,10 @@ void testBorder() {
     drawStride(24, 1, 32, -1) //draw a G hook
 }
 
-byte upperNib(byte nib) {
-    return nib >> 4
-}
-
-byte lowerNib(byte nib) {
-    return nib << 4
-}
-
-void loadGfx() {
-    fileOpenGfx()
+//===========================================================
+// VERA BMP FILE LOADERS
+//===========================================================
+void loadHeadPal() {
     fileSkipChar(14) //header
     fileSkipChar(40) //BITMAPINFOHEADER (older - NO COMPRESSION)
     //now at colour table
@@ -259,37 +281,24 @@ void loadGfx() {
         green = fileInput()
         red = fileInput()
         fileInput() //alpha
-        setPal(colour, upperNib(red), upperNib(green), upperNib(blue))
+        setPal(colour, hiNibLo(red), hiNibLo(green), hiNibLo(blue))
     }
+}
+
+void loadGfxBig() {
     //now at bitmap (note bottom left to right row first)
     //load big glyphs
     byte x
     word y
-    byte colour2
+    word colour
     for y, 447, downto, 0 {//size of big glyph section
         for x, 0, to, 127 {//in quads
-            colour = lowerNib(fileInput() & $F) //nibble mod
-            colour = colour | (fileInput() & $F)
-            colour2 = lowerNib(fileInput() & $F) //nibble mod
-            colour2 = colour2 | (fileInput() & $F)
-            plotPairs(x, y, colour, colour2) //for alignment issue
+            colour.hi = lowNibHi(fileInput()) //nibble mod
+            colour.hi = colour.hi | (fileInput() & $F)
+            colour.lo = lowNibHi(fileInput()) //nibble mod
+            colour.lo = colour.lo | (fileInput() & $F)
+            plotQuad(x, y, colour) //for alignment issue
         }
     }//that really should draw all 1024-128 glyph positions with paint
-    //and close
-    fileClose()
 }
 
-void plotPairs(byte qx, word y, byte pair, byte pair2) {//quarter x
-    word base
-    base = bigBasePix
-    word inside
-    inside = (qx & $3) | ((y & $F) << 2) //inside a glyph address
-    word glyph
-    glyph = (qx >> 2) | ((y & $FFF0) << 1) //and glyph number
-    //glyph starts 4 in
-    base = base + (glyph << 6) //for multiply 64 to be 17:1 4bpp
-    base = base + inside //for 17:1 address
-    vaddr(base)
-    bvoke(pair)
-    bvoke(pair2)
-}

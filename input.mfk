@@ -67,7 +67,7 @@ byte direction(byte num) {
 //$FFD5: LOAD – load a file into memory
 //$FFD8: SAVE – save a file from memory
 //$FFE7: CLALL – close all channels
-void fileOpenGfx() {
+void fileOpen() {
     const array(byte) name = "gfx.bmp"
     const byte low = name.addr.lo
     const byte high = name.addr.hi
@@ -99,7 +99,7 @@ byte fileInput() {
         STA data
     }
     if fileReadOff {
-        seqRand = seqRand + 17
+        seqRand = seqRand + 1 //some semi random disk bypass for test
         return seqRand //white? assuming null file zero
     }
     return data

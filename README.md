@@ -9,6 +9,7 @@ facilitate my sanity of distraction from version updates. It's growing all the t
 * *baselib.mfk* - Mainly graphics configuration and base initialization and shutdown functions.
 * *input.mfk* - An input library for joypad and "disk".
 * *main.mfk* - The main file for the current build.
+* *setup.mfk* - Configuration for testing and build.
 
 New files will be added and renamed as and when the code matures for any particular thing. The code generator for *Millfork* is quite good as it seems to not make code which is not reached. Language perculiarities are few, but there non the less.
 
