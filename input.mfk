@@ -56,8 +56,8 @@ byte direction(byte num) {
 // FILE OPEN, INPUT AND CLOSE
 //===========================================================
 inline void fileOpen(pointer name) {
-    open_file(1, name, 1, MODE_READ)
-    chkin(1)
+    open_file(1, name, 3, MODE_READ)
+    chkin(3)
 }
 
 byte fileInput() {
@@ -74,5 +74,5 @@ void fileSkipChar(word skip) {
 }
 
 inline void fileClose() {
-    close_file(1)
+    close_file(3)
 }

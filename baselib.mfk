@@ -3,6 +3,7 @@
 // Useful routines mainly output video
 import setup
 import input
+import stdio
 
 //===========================================================
 // BANKING
@@ -70,7 +71,7 @@ void initGeneral() {
     fileOpen("GFX.BMP"z) //open graphics
     byte i
     for i, 1, to, 255 {
-        putchar(fileInput())
+        putword(fileInput())
     }
     //loadHeadPal()
     //loadBigMap() //fill with all glyphs
