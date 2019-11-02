@@ -63,13 +63,17 @@ const word smallPixAlign = smallBasePix - (24 * smallGlyphStep) //should be 4096
 void initGeneral() {
     kernal()
     ramBank(0)
-    poke($9F25, 0) //init VERA 0
-    vinit(512, 448, 0) //set visible area
+    //poke($9F25, 0) //init VERA 0
+    //vinit(512, 448, 0) //set visible area
     //initialize layers
-    setLayer(0, geo4bppMap, geoBig, bigBaseMap, bigPixAlign)
-    fileOpen()
-    loadHeadPal()
-    loadBigMap() //fill with all glyphs
+    //setLayer(0, geo4bppMap, geoBig, bigBaseMap, bigPixAlign)
+    fileOpen("GFX.BMP"z) //open graphics
+    byte i
+    for i, 1, to, 255 {
+        putchar(fileInput())
+    }
+    //loadHeadPal()
+    //loadBigMap() //fill with all glyphs
 
     fileClose()
     //forground text layer
