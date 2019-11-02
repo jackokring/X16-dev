@@ -56,8 +56,8 @@ byte direction(byte num) {
 // FILE OPEN, INPUT AND CLOSE
 //===========================================================
 inline void fileOpen(pointer name) {
-    open_file(1, name, 3, MODE_READ)
-    chkin(3)
+    open_file(name, 3, READ)
+    chkin(3) //make it read
 }
 
 byte fileInput() {
