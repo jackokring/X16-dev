@@ -416,7 +416,8 @@
     <tr>
         <td>3</td>
         <td>Ln_MAP_BASE_H</td>
-        <td align="center" colspan="8">MAP_BASE (17:10)</td>
+        <td align="center">-</td>
+        <td align="center" colspan="7">MAP_BASE (16:10)</td>
     </tr>
     <tr>
         <td>4</td>
@@ -426,7 +427,8 @@
     <tr>
         <td>5</td>
         <td>Ln_TILE_BASE_H</td>
-        <td align="center" colspan="8">TILE_BASE (17:10)</td>
+        <td align="center">-</td>
+        <td align="center" colspan="8">TILE_BASE (16:10)</td>
     </tr>
     <tr>
         <td>6</td>
@@ -594,7 +596,8 @@
     </tr>
 </table>
 
-<p><strong>TILE_BASE</strong> points to the character data. This data is organized as 8 bytes per character entry. Each byte represents 1 line of character data, where bit 7 represents the left-most pixel and bit 0 the right-most pixel. If the bit is set the foreground color is used, otherwise the background color.</p>
+<p><strong>TILE_BASE</strong> points to the tile data.</p>
+<p>Each bit in the tile data specifies one pixel. If the bit is set the foreground color as specified in the map data is used, otherwise the background color as specified in the map data is used.</p>
 <h3 id="mode-1--256-color-text-mode">Mode 1 – 256 color text mode</h3>
 <p><strong>MAP_BASE</strong> points to a tile map containing tile map entries, which are 2 bytes each:</p>
 <table>
@@ -619,7 +622,8 @@
     </tr>
 </table>
 
-<p><strong>TILE_BASE</strong> points to the character data. This data is organized as 8 bytes per character entry. Each byte represents 1 line of character data, where bit 7 represents the left-most pixel and bit 0 the right-most pixel. If the bit is set the foreground color is used, otherwise color 0 is used.</p>
+<p><strong>TILE_BASE</strong> points to the tile data.</p>
+<p>Each bit in the tile data specifies one pixel. If the bit is set the foreground color as specified in the map data is used, otherwise color 0 is used (transparent).</p>
 <h3 id="mode-234--tile-mode-248bpp">Mode 2/3/4 – Tile mode 2/4/8bpp</h3>
 <p><strong>MAP_BASE</strong> points to a tile map containing tile map entries, which are 2 bytes each:</p>
 <table>
@@ -816,6 +820,7 @@
 </tr>
 </tbody>
 </table>
+<p><strong>Rendering Priority</strong> The sprite memory location dictates the order in which it is rendered. The sprite whose attributes are at the lowest location, $F5000, will be rendered in front of all other sprites; the sprite at the highest location will be rendered behind all other sprites, and so forth.</p>
 <p><strong>Palette offset</strong> works in the same way as with the layers.</p>
 <h2 id="spi-registers">SPI registers</h2>
 <table>

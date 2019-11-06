@@ -70,7 +70,7 @@
 <p><strong>Features:</strong></p>
 <ul>
 <li>8-bit 65C02 CPU at 8 MHz</li>
-<li>2 MB RAM</li>
+<li>512 KB or 2 MB RAM</li>
 <li>128 KB ROM</li>
 <li>VERA video controller
 <ul>
@@ -92,7 +92,6 @@
 <p>As a modern sibling of the line of Commodore home computers, the Commander X16 is resaonably compatible with computers of that line.</p>
 <ul>
 <li>Pure BASIC programs are fully backwards compatible with the VIC-20 and the C64.</li>
-<li>Most PEEKs and POKEs of addresses in the $0000-$0340 area are compatible with the C64.</li>
 <li>POKEs for video and audio are not compatible with any Commodore computer. (There are no VIC or SID controllers, for example.)</li>
 <li>Pure machine language programs ($FF81+ KERNAL API) are compatible with Commodore computers.</li>
 </ul>
@@ -221,6 +220,61 @@ Fx|ðñòóôõö÷øùúûüýþÿ|
 <p>Pressing the <code>F9</code> key cycles through the available keyboard layouts.</p>
 <h3 id="new-statements-and-functions">New Statements and Functions</h3>
 <p>There are several new statement and functions. Note that all BASIC keywords (such as <code>FOR</code>) get converted into tokens (such as <code>$81</code>), and the tokens for the new keywords have not been finalized yet. Therefore, loading BASIC program saved from a different revision of BASIC may mix up keywords.</p>
+<h4 id="geos">GEOS</h4>
+<p><strong>TYPE: Command</strong> <strong>FORMAT: GEOS</strong></p>
+<p><strong>Action:</strong> Enter the GEOS UI.</p>
+<h4 id="char">CHAR</h4>
+<p><strong>TYPE: Command</strong> <strong>FORMAT: CHAR &lt;x&gt;,&lt;y&gt;,&lt;color&gt;,&lt;string&gt;</strong></p>
+<p><strong>Action:</strong> This command draws a text string on the graphics screen in a given color.</p>
+<p>The string can contain printable ASCII characters (<code>CHR$($20)</code> to <code>CHR$($7E)</code>), as well as the following GEOS control codes:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Code</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>13</td>
+<td>Carriage Return</td>
+</tr>
+<tr class="even">
+<td>14</td>
+<td>Underline</td>
+</tr>
+<tr class="odd">
+<td>18</td>
+<td>Reverse</td>
+</tr>
+<tr class="even">
+<td>24</td>
+<td>Bold</td>
+</tr>
+<tr class="odd">
+<td>25</td>
+<td>Italics</td>
+</tr>
+<tr class="even">
+<td>26</td>
+<td>Outline</td>
+</tr>
+<tr class="odd">
+<td>27</td>
+<td>Plain text</td>
+</tr>
+</tbody>
+</table>
+<p><strong>EXAMPLE of CHAR Statement:</strong></p>
+<pre><code>10 SCREEN$80
+20 A$=&quot;The quick brown fox jumps over the lazy dog.&quot;
+24 CHAR0,6,0,A$
+30 CHAR0,6+12,0,CHR$(14)+A$
+40 CHAR0,6+12*2,0,CHR$(18)+A$
+50 CHAR0,6+12*3,0,CHR$(24)+A$
+60 CHAR0,6+12*4,0,CHR$(25)+A$
+70 CHAR0,6+12*5,0,CHR$(26)+A$
+</code></pre>
 <h4 id="dos">DOS</h4>
 <p><strong>TYPE: Command</strong> <strong>FORMAT: DOS &lt;string&gt;</strong></p>
 <p><strong>Action:</strong> This command works with the command/status channel or the directory of a Commodore DOS device and has different functionality depending on the type of argument.</p>
@@ -235,11 +289,22 @@ Fx|ðñòóôõö÷øùúûüýþÿ|
   DOS&quot;S:BAD_FILE&quot; : REM DELETES &quot;BAD_FILE&quot;
   DOS             : REM PRINTS DOS STATUS, E.G. &quot;01,FILES SCRATCHED,01,00&quot;
 </code></pre>
-<h4 id="old">OLD</h4>
-<p><strong>TYPE: Command</strong> <strong>FORMAT: OLD</strong></p>
-<p><strong>Action:</strong> This command recovers the BASIC program in RAM that has been previously deleted using the <code>NEW</code> command or through a RESET.</p>
-<p><strong>EXAMPLE of OLD Statement:</strong></p>
-<pre><code>  OLD
+<h4 id="frame">FRAME</h4>
+<p><strong>TYPE: Command</strong> <strong>FORMAT: FRAME &lt;x1&gt;,&lt;y1&gt;,&lt;x2&gt;,&lt;y2&gt;,&lt;color&gt;</strong></p>
+<p><strong>Action:</strong> This command draws a rectangle frame on the graphics screen in a given color.</p>
+<p><strong>EXAMPLE of FRAME Statement:</strong></p>
+<pre><code>10 SCREEN$80
+20 FORI=1TO20:FRAMERND(1)*320,RND(1)*200,RND(1)*320,RND(1)*200,RND(1)*128:NEXT
+30 GOTO20
+</code></pre>
+<h4 id="line">LINE</h4>
+<p><strong>TYPE: Command</strong> <strong>FORMAT: LINE &lt;x1&gt;,&lt;y1&gt;,&lt;x2&gt;,&lt;y2&gt;,&lt;color&gt;</strong></p>
+<p><strong>Action:</strong> This command draws a line on the graphics screen in a given color.</p>
+<p><strong>EXAMPLE of LINE Statement:</strong></p>
+<pre><code>10 SCREEN128
+20 FORA=0TO2*\XFFSTEP2*\XFF/200
+30 LINE100,100,100+SIN(A)*100,100+COS(A)*100
+40 NEXT
 </code></pre>
 <h4 id="mon">MON</h4>
 <p><strong>TYPE: Command</strong> <strong>FORMAT: MON</strong></p>
@@ -247,10 +312,144 @@ Fx|ðñòóôõö÷øùúûüýþÿ|
 <p><strong>EXAMPLE of MON Statement:</strong></p>
 <pre><code>  MON
 </code></pre>
+<h4 id="mouse">MOUSE</h4>
+<p><strong>TYPE: Command</strong> <strong>FORMAT: MOUSE &lt;mode&gt;</strong></p>
+<p><strong>Action:</strong> This command configures the mouse pointer.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Mode</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>Hide mouse</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>Show mouse, set default mouse pointer</td>
+</tr>
+<tr class="odd">
+<td>$FF</td>
+<td>Show mouse, don't configure mouse cursor</td>
+</tr>
+</tbody>
+</table>
+<p><code>MOUSE 1</code> turns on the mouse pointer and <code>MOUSE 0</code> turns it off. If the BASIC program has its own mouse pointer sprite configured, it can use <code>MOUSE $FF</code>, which will turn the mouse pointer on, but not set the default pointer sprite.</p>
+<p><strong>EXAMPLES of MOUSE Statement:</strong></p>
+<pre><code>MOUSE 1 : REM ENABLE MOUSE
+MOUSE 0 : REM DISABLE MOUSE
+</code></pre>
+<h4 id="mxmymb">MX/MY/MB</h4>
+<p><strong>TYPE: Integer Function</strong> <strong>FORMAT: MX</strong> <strong>FORMAT: MY</strong> <strong>FORMAT: MB</strong></p>
+<p><strong>Action:</strong> Return the horizontal (<code>MX</code>) or vertical (<code>MY</code>) position of the mouse pointer, or the mouse button state (<code>MB</code>).</p>
+<p><code>MB</code> returns the sum of the following values depending on the state of the buttons:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Value</th>
+<th>Button</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>none</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>left</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>right</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>third</td>
+</tr>
+</tbody>
+</table>
+<p><strong>EXAMPLE of MX/MY/MB Functions:</strong></p>
+<pre><code>REM SIMPLE DRAWING PROGRAM
+10 SCREEN$80
+20 MOUSE1
+25 OB=0
+30 TX=MX:TY=MY:TB=MB
+35 IFTB=0GOTO25
+40 IFOBTHENLINEOX,OY,TX,TY,16
+50 IFOB=0THENPSETTX,TY,16
+60 OX=TX:OY=TY:OB=TB
+70 GOTO30
+</code></pre>
+<h4 id="old">OLD</h4>
+<p><strong>TYPE: Command</strong> <strong>FORMAT: OLD</strong></p>
+<p><strong>Action:</strong> This command recovers the BASIC program in RAM that has been previously deleted using the <code>NEW</code> command or through a RESET.</p>
+<p><strong>EXAMPLE of OLD Statement:</strong></p>
+<pre><code>  OLD
+</code></pre>
+<h4 id="pset">PSET</h4>
+<p><strong>TYPE: Command</strong> <strong>FORMAT: PSET &lt;x&gt;,&lt;y&gt;,&lt;color&gt;</strong></p>
+<p><strong>Action:</strong> This command sets a pixel on the graphics screen to a given color.</p>
+<p><strong>EXAMPLE of PSET Statement:</strong></p>
+<pre><code>10 SCREEN$80
+20 FORI=1TO20:PSETRND(1)*320,RND(1)*200,RND(1)*256:NEXT
+30 GOTO20
+</code></pre>
+<h4 id="rect">RECT</h4>
+<p><strong>TYPE: Command</strong> <strong>FORMAT: RECT &lt;x1&gt;,&lt;y1&gt;,&lt;x2&gt;,&lt;y2&gt;,&lt;color&gt;</strong></p>
+<p><strong>Action:</strong> This command draws a solid rectangle on the graphics screen in a given color.</p>
+<p><strong>EXAMPLE of RECT Statement:</strong></p>
+<pre><code>10 SCREEN$80
+20 FORI=1TO20:RECTRND(1)*320,RND(1)*200,RND(1)*320,RND(1)*200,RND(1)*256:NEXT
+30 GOTO20
+</code></pre>
+<h4 id="screen">SCREEN</h4>
+<p><strong>TYPE: Command</strong> <strong>FORMAT: SCREEN &lt;mode&gt;</strong></p>
+<p><strong>Action:</strong> This command switches the screen mode. Modes $80 (128) and above are graphics modes.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Mode</th>
+<th>Description</th>
+<th>Comment</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>$00</td>
+<td>40x30 text</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>$01</td>
+<td>80x30 text</td>
+<td>(currently unsupported)</td>
+</tr>
+<tr class="odd">
+<td>$02</td>
+<td>80x60 text</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>$80</td>
+<td>320x200@256c<br/>40x25 text</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>$81</td>
+<td>640x400@16c</td>
+<td>(currently unsupported)</td>
+</tr>
+</tbody>
+</table>
+<p>The value of $FF (255) toggles between modes $00 and $02.</p>
 <h4 id="vpeek">VPEEK</h4>
 <p><strong>TYPE: Integer Function</strong> <strong>FORMAT: VPEEK (&lt;bank&gt;, &lt;address&gt;)</strong></p>
 <p><strong>Action:</strong> Return a byte from the video address space. The video address space has 20 bit addresses, which is exposed as 16 banks of 65536 addresses each.</p>
-<p><strong>EXAMPLE of VPEEK Statement:</strong></p>
+<p><strong>EXAMPLE of VPEEK Function:</strong></p>
 <pre><code>  PRINT (VPEEK($F,$2000) AND $E0) / 32 : REM PRINTS THE CURRENT MODE (0-7)
 </code></pre>
 <h4 id="vpoke">VPOKE</h4>
@@ -260,6 +459,8 @@ Fx|ðñòóôõö÷øùúûüýþÿ|
 <pre><code>  VPOKE 0,1,1 * 16 + 2 : REM SETS THE COLORS OF THE CHARACTER
                          REM AT 0/0 TO RED ON WHITE
 </code></pre>
+<h4 id="vload">VLOAD</h4>
+<p><em>TODO</em></p>
 <h3 id="other-new-features">Other New Features</h3>
 <p>The numeric constants parser supports both hex (<code>$</code>) and binary (<code>%</code>) literals, like this:</p>
 <pre><code>  PRINT $EA31 + %1010
@@ -291,8 +492,17 @@ Fx|ðñòóôõö÷øùúûüýþÿ|
 <pre><code>  PRINT CHR$(147)
 </code></pre>
 <p>In BASIC, both an 80x60 and a 40x30 character text mode is supported. To switch modes, use the following BASIC code:</p>
-<pre><code>  IF PEEK($D9)&lt;&gt;40 THEN SYS $FF5F : REM SWITCH TO 40 CHARACTER MODE
-  IF PEEK($D9)&lt;&gt;80 THEN SYS $FF5F : REM SWITCH TO 80 CHARACTER MODE
+<pre><code>  IF PEEK($02AE)&lt;&gt;40 THEN SYS $FF5F : REM SWITCH TO 40 CHARACTER MODE
+  IF PEEK($02AE)&lt;&gt;80 THEN SYS $FF5F : REM SWITCH TO 80 CHARACTER MODE
+</code></pre>
+<p>In BASIC, the contents of files can be directly loaded into VRAM with the <code>LOAD</code> statement. When a secondary address greater than one is used, the KERNAL will now load the file into the VERA's VRAM address space. The first two bytes of the file are used as lower 16 bits of the address. The upper 4 bits are <code>(SA-2) &amp; 0x0ff</code> where <code>SA</code> is the secondary address.</p>
+<p>Examples:</p>
+<pre><code>  10 REM LOAD VERA SETTINGS
+  20 LOAD&quot;VERA.BIN&quot;,1,18 : REM SET ADDRESS TO $FXXXX
+  30 REM LOAD TILES
+  40 LOAD&quot;TILES.BIN&quot;,1,3 : REM SET ADDRESS TO $1XXXX
+  50 REM LOAD MAP
+  60 LOAD&quot;MAP.BIN&quot;,1,2 : REM SET ADDRESS TO $0XXXX
 </code></pre>
 <h3 id="internal-representation">Internal Representation</h3>
 <p>Like on the C64, BASIC keywords are tokenized.</p>
@@ -308,6 +518,7 @@ Fx|ðñòóôõö÷øùúûüýþÿ|
 <ul>
 <li>a 40/80 character screen driver</li>
 <li>a PS/2 keyboard driver</li>
+<li>a PS/2 mouse driver</li>
 <li>an NES/SNES controller driver</li>
 <li>a Commodore Serial Bus ("IEC") driver <em>[not yet working]</em></li>
 <li>an RS-232 driver <em>[not yet working]</em></li>
@@ -343,14 +554,14 @@ Fx|ðñòóôõö÷øùúûüýþÿ|
 <li>For device #8, the Commodore Peripheral Bus calls first talk to the "Computer DOS" built into the ROM to detect an SD card, before falling back to the Commodore Serial Bus.</li>
 <li>The <code>IOBASE</code> call returns $9F60, the location of the first VIA controller.</li>
 <li>The <code>SETTMO</code> call has been a no-op since the Commodore VIC-20, and has no function on the X16 either.</li>
-<li>The layout of the zero page ($0000-$00FF), the KERNAL/BASIC variable space ($0200 -$02FF) and the vectors ($0300-$0333) are also fully compatible with the C64.</li>
+<li>The layout of the zero page ($0000-$00FF) and the KERNAL/BASIC variable space ($0200-$02FF) are generally <strong>not</strong> compatible with the C64.</li>
+<li>The vectors ($0300-$0333) are fully compatible with the C64.</li>
 </ul>
 <h3 id="commodore-128-api-compatibility">Commodore 128 API Compatibility</h3>
 <p>In addition, the X16 supports a subset of the C128 API additions:</p>
-<p>$FF4A: <code>CLOSE_ALL</code> – close all files on a device $FF53: <code>BOOT_CALL</code> – boot load program from disk <em>[not yet implemented]</em> $FF8D: <code>LKUPLA</code> – search tables for given LA $FF8A: <code>LKUPSA</code> – search tables for given SA $FF5F: <code>SWAPPER</code> – switch between 40 and 80 columns $FF65: <code>PFKEY</code> – program a function key <em>[not yet implemented]</em> $FF74: <code>FETCH</code> – LDA (fetvec),Y from any bank $FF77: <code>STASH</code> – STA (stavec),Y to any bank $FF7A: <code>CMPARE</code> – CMP (cmpvec),Y to any bank $FF7D: <code>PRIMM</code> – print string following the caller’s code</p>
+<p>$FF4A: <code>CLOSE_ALL</code> – close all files on a device $FF53: <code>BOOT_CALL</code> – boot load program from disk <em>[not yet implemented]</em> $FF8D: <code>LKUPLA</code> – search tables for given LA $FF8A: <code>LKUPSA</code> – search tables for given SA $FF65: <code>PFKEY</code> – program a function key <em>[not yet implemented]</em> $FF74: <code>FETCH</code> – LDA (fetvec),Y from any bank $FF77: <code>STASH</code> – STA (stavec),Y to any bank $FF7A: <code>CMPARE</code> – CMP (cmpvec),Y to any bank $FF7D: <code>PRIMM</code> – print string following the caller’s code</p>
 <p>Some notes:</p>
 <ul>
-<li>For <code>SWAPPER</code>, the user can detect the current mode by reading the zero page location <code>LLEN</code> ($D9), which either holds a value of 40 or 80. This is different than on the C128.</li>
 <li><code>FETCH</code>, <code>STASH</code> and <code>CMPARE</code> require the caller to set the zero page location containing the address in memory beforehand. These are different than on the C128:</li>
 </ul>
 <table>
@@ -381,15 +592,15 @@ Fx|ðñòóôõö÷øùúûüýþÿ|
 </table>
 <h3 id="new-api-for-the-commander-x16">New API for the Commander X16</h3>
 <p>There are a few new APIs. Please note that their addresses and their behavior is still prelimiary and can change between revisions.</p>
-<p>$FF00: <code>MONITOR</code> – enter montior $FF06: <code>GETJOY</code> – query joysticks $FF6E: <code>JSRFAR</code> – gosub in another bank</p>
+<p>$FF00: <code>MONITOR</code> – enter montior $FF06: <code>GETJOY</code> – query joysticks $FF09: <code>MOUSE</code> – control mouse $FF6E: <code>JSRFAR</code> – gosub in another bank $FF5F: <code>SCRMOD</code> – set screen mode</p>
 <h4 id="function-name-getjoy">Function Name: GETJOY</h4>
 <p>Purpose: Query the joysticks and store their state in the zeropage Call address: $FF06 (hex) 65286 (decimal) Communication registers: None Preparatory routines: None Error returns: None Stack requirements: 0 Registers affected: .A, .X, .Y</p>
-<p><strong>Description:</strong> The routine <code>GETJOY</code> retrieves all state from the two joysticks and stores it in the zeropage locations <code>JOY1</code> ($EF-$F1) and <code>JOY2</code> ($F2-$F4).</p>
+<p><strong>Description:</strong> The routine <code>GETJOY</code> retrieves all state from the two joysticks and stores it in the memory locations <code>JOY1</code> ($02BC-$02BE) and <code>JOY2</code> ($02BF-$02C1).</p>
 <p>Each of these symbols consist of 3 bytes with the following layout:</p>
 <pre><code>  byte 0:      | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
           NES  | A | B |SEL|STA|UP |DN |LT |RT |
           SNES | B | Y |SEL|STA|UP |DN |LT |RT |
-  
+
   byte 1:      | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
           NES  | 0 | 0 | 0 | 0 | 0 | 0 | 0 | X |
           SNES | A | X | L | R | 1 | 1 | 1 | 1 |
@@ -503,6 +714,23 @@ Fx|ðñòóôõö÷øùúûüýþÿ|
 <p><strong>EXAMPLE:</strong></p>
 <pre><code>  JMP MONITOR
 </code></pre>
+<h4 id="function-name-mouse">Function Name: MOUSE</h4>
+<p>Purpose: Configure the mouse pointer Call address: $FF09 (hex) 65289 (decimal) Communication registers: .A, .X Preparatory routines: None Error returns: None Stack requirements: 0 Registers affected: .A, .X, .Y</p>
+<p><strong>Description:</strong> The routine <code>MOUSE</code> configures the mouse pointer.</p>
+<p>The argument in .A specifies whether the mouse pointer should be visible or not, and what shape it should have. For a list of possible values, see the basic statement <code>SCREEN</code>.</p>
+<p>The argument in .X specifies the scale. Use a scale of 1 for a 640x480 screen, and a scale of 2 for a 320x240 screen. A value of 0 does not change the scale.</p>
+<p><strong>EXAMPLE:</strong></p>
+<pre><code>LDA #1
+JSR MOUSE ; show the default mouse pointer
+</code></pre>
+<h4 id="function-name-scrmod">Function Name: SCRMOD</h4>
+<p>Purpose: Set the screen mode Call address: $FF5F (hex) 65375 (decimal) Communication registers: .A Preparatory routines: None Error returns: .C = 1 in case of error Stack requirements: [?] Registers affected: .A, .X, .Y</p>
+<p><strong>Description:</strong> The routine <code>SCRMOD</code> sets the current screen mode. For a list of possible values, see the basic statement <code>SCREEN</code>.</p>
+<p><strong>EXAMPLE:</strong></p>
+<pre><code>LDA #$80
+JSR SCRMOD ; SET 320x200@256C MODE
+BCS FAILURE
+</code></pre>
 <h2 id="machine-language-monitor">Machine Language Monitor</h2>
 <p>The built-in machine language monitor can be started with the <code>MON</code> BASIC command. It is based on the monitor of the Final Cartridge III and supports all its features. See the <a href="https://rr.pokefinder.org/rrwiki/images/7/70/Final_Cartridge_III_english_Manual.pdf">Final Cartridge III Manual</a> more more information.</p>
 <p>If you invoke the monitor by mistake, you can exit with by typing <code>X</code>, followed by the <code>RETURN</code> key.</p>
@@ -569,33 +797,33 @@ ECF000 F00F
 <tbody>
 <tr class="odd">
 <td>0</td>
+<td>KERNAL</td>
+<td>character sets (uploaded into VRAM), MONITOR, KERNAL</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>KEYBD</td>
+<td>Keyboard layout tables</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>CBDOS</td>
+<td>The computer-based CBM-DOS for FAT32 SD cards</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>GEOS</td>
+<td>GEOS KERNAL</td>
+</tr>
+<tr class="odd">
+<td>4</td>
 <td>BASIC</td>
 <td>BASIC interpreter</td>
 </tr>
 <tr class="even">
-<td>1-3</td>
+<td>5-7</td>
 <td>–</td>
 <td><em>[Currently unused]</em></td>
-</tr>
-<tr class="odd">
-<td>4</td>
-<td>GEOS</td>
-<td>GEOS KERNAL</td>
-</tr>
-<tr class="even">
-<td>5</td>
-<td>CBDOS</td>
-<td>The computer-based CBM-DOS for FAT32 SD cards</td>
-</tr>
-<tr class="odd">
-<td>6</td>
-<td>KEYMAP</td>
-<td>Keyboard layout tables</td>
-</tr>
-<tr class="even">
-<td>7</td>
-<td>KERNAL</td>
-<td>character sets (uploaded into VRAM), MONITOR, KERNAL</td>
 </tr>
 </tbody>
 </table>
@@ -611,24 +839,28 @@ ECF000 F00F
 </thead>
 <tbody>
 <tr class="odd">
-<td>$0000-$00FF</td>
-<td>KERNAL and BASIC zero page variables</td>
+<td>$0000-$007F</td>
+<td>User zero page</td>
 </tr>
 <tr class="even">
+<td>$0080-$00FF</td>
+<td>KERNAL and BASIC zero page variables</td>
+</tr>
+<tr class="odd">
 <td>$0100-$01FF</td>
 <td>CPU stack</td>
 </tr>
-<tr class="odd">
-<td>$0000-$07FF</td>
+<tr class="even">
+<td>$0200-$07FF</td>
 <td>KERNAL and BASIC variables</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>$0800-$9EFF</td>
 <td>BASIC program/variables; available to the user</td>
 </tr>
 </tbody>
 </table>
-<p>The following zero page locations are unused by KERNAL/BASIC and are available to the user:</p>
+<p>The following zero page locations are completely unused by KERNAL/BASIC and are available to the user:</p>
 <table>
 <thead>
 <tr class="header">
@@ -637,10 +869,7 @@ ECF000 F00F
 </thead>
 <tbody>
 <tr class="odd">
-<td>$0000-$0002</td>
-</tr>
-<tr class="even">
-<td>$00FB-$00FE</td>
+<td>$0000-$007F</td>
 </tr>
 </tbody>
 </table>
@@ -653,10 +882,7 @@ ECF000 F00F
 </thead>
 <tbody>
 <tr class="odd">
-<td>$0000-$008F</td>
-</tr>
-<tr class="even">
-<td>$00FF</td>
+<td>$00A9-$00FF</td>
 </tr>
 </tbody>
 </table>
@@ -731,13 +957,8 @@ ECF000 F00F
 <p>The VERA video chip supports resolutions up to 640x480 with up to 256 colors from a palette of 4096, two layers of either a bitmap or tiles, 128 sprites of up to 64x64 pixels in size. It can output VGA as well as a 525 line interlaced signal, either as NTSC or as RGB (Amiga-style).</p>
 <p>See the <a href="VERA%20Programmer&#39;s%20Reference.html">VERA Programmer's Reference</a> for the complete reference.</p>
 <p><strong>IMPORTANT</strong>: The VERA register layout has changed between 0.7 and 0.8. Here is the old documentation: <a href="https://github.com/commanderx16/x16-docs/blob/master/old/vera-module%20v0.7.pdf">vera-module v0.7.pdf</a></p>
-<p>The KERNAL uploads the three character sets to:</p>
-<ul>
-<li>$1E800: ISO-8859-15 (2 KB)</li>
-<li>$1F000: PETSCII upper case/graphics (2 KB)</li>
-<li>$1F800: PETSCII upper/lower case (2 KB)</li>
-</ul>
-<p>Application software is free to reuse this part of video RAM if it does not need the character sets. If it needs them again later, it can use the KERNAL call <code>CINT</code> ($FF81), which initializes the VERA chip and uploads the character sets.</p>
+<p>The KERNAL uploads the current character sets (PETSCII graphics, PETSCII upper/lower or ISO-8859-15) to $0F800, i.e. the top of video RAM bank 0.</p>
+<p>Application software is free to reuse this part of video RAM if it does not need the character set. If it needs them again later, it can use the KERNAL call <code>CINT</code> ($FF81), which initializes the VERA chip and uploads the PETSCII graphics character set, or print character code $0E too trigger an upload of the PETSCII upper/lower chcracter set, or $0F for the ISO character set.</p>
 <h2 id="sound-programming">Sound Programming</h2>
 <p><em>[TODO]</em></p>
 <h2 id="io-programming">I/O Programming</h2>
@@ -808,7 +1029,15 @@ ECF000 F00F
 <td><em>[TBD]</em></td>
 </tr>
 <tr class="odd">
-<td>PB0-7</td>
+<td>PA0</td>
+<td>MOUSE PS/2 DAT</td>
+</tr>
+<tr class="even">
+<td>PA1</td>
+<td>MOUSE PS/2 CLK</td>
+</tr>
+<tr class="odd">
+<td>PB2-7</td>
 <td><em>[TBD]</em></td>
 </tr>
 </tbody>

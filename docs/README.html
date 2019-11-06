@@ -17,10 +17,13 @@
   <![endif]-->
 </head>
 <body>
-<h1 id="commander-x16-emulator">Commander X16 Emulator</h1>
+<p align="center">
+  <img src="./.gh/logo.png" />
+</p>
+
+<p><a href="https://travis-ci.org/commanderx16/x16-emulator"><img src="https://travis-ci.org/commanderx16/x16-emulator.svg?branch=master" alt="Build Status" /></a> <a href="https://github.com/commanderx16/x16-emulator/releases"><img src="https://img.shields.io/github/v/release/commanderx16/x16-emulator" alt="Release" /></a> <a href="./LICENSE"><img src="https://img.shields.io/github/license/commanderx16/x16-emulator" alt="License: BSD-Clause" /></a> <a href="https://github.com/commanderx16/x16-emulator/graphs/contributors"><img src="https://img.shields.io/github/contributors/commanderx16/x16-emulator.svg" alt="Contributors" /></a></p>
 <p>This is an emulator for the Commander X16 computer system. It only depends on SDL2 and should compile on all modern operating systems.</p>
 <h2 id="binaries--compiling">Binaries &amp; Compiling</h2>
-<p><a href="https://travis-ci.org/commanderx16/x16-emulator"><img alt="Travis (.org)" src="https://img.shields.io/travis/commanderx16/x16-emulator.svg?label=CI&logo=travis&logoColor=white&style=for-the-badge"></a></p>
 <p>Binary releases for MacOS, Windows and x86_64 Linux are available on the <a href="https://github.com/commanderx16/x16-emulator/releases">releases page</a>.</p>
 <p>The emulator itself is dependent only on SDL2. However, to run the emulated system you will also need a compatible <code>rom.bin</code> ROM image. This will be loaded from the directory containing the emulator binary, or you can use the <code>-rom .../path/to/rom.bin</code> option.</p>
 <blockquote>
@@ -291,12 +294,21 @@
 <li>VERA
 <ul>
 <li>Mostly cycle exact emulation</li>
-<li>Supports almost all features: composer, two layers, sprites, progressive/interlaced</li>
+<li>Supports almost all features:
+<ul>
+<li>composer</li>
+<li>two layers</li>
+<li>sprites</li>
+<li>progressive/interlaced</li>
+<li>VSYNC and raster IRQ</li>
+</ul></li>
 </ul></li>
 <li>VIA
 <ul>
 <li>ROM/RAM banking</li>
-<li>PS/2 keyboard</li>
+<li>keyboard</li>
+<li>mouse</li>
+<li>gamepad</li>
 <li>SD card (SPI)</li>
 </ul></li>
 </ul>
@@ -304,16 +316,15 @@
 <ul>
 <li>VERA
 <ul>
-<li>Does not support raster IRQs (does support VSYNC though)</li>
 <li>Does not support the "CURRENT_FIELD" bit</li>
-<li>Does not sprite z-depth, collisions or limitations</li>
-<li>Only supports the first 16 sprites</li>
+<li>Does not sprite collisions</li>
+<li><ul>
 <li>Interlaced modes (NTSC/RGB) don't render at the full horizontal fidelity</li>
+</ul></li>
 </ul></li>
 <li>VIA
 <ul>
 <li>Does not support counters/timers/IRQs</li>
-<li>Does not support game controllers</li>
 </ul></li>
 <li>Sound
 <ul>
@@ -327,6 +338,12 @@
 <li>Emulator: LOAD"$ (and LOAD"$",1) will show host uppercase filenames as garbage. Use Ctrl+N to switch to the X16 upper/lower character set for a workaround.</li>
 </ul>
 <h2 id="release-notes">Release Notes</h2>
+<h3 id="release-34">Release 34</h3>
+<ul>
+<li>PS/2 mouse</li>
+<li>support for text mode with tiles other than 8x8 [Serentty]</li>
+<li>fix: programmatic echo mode control [Mikael O. Bonnier]</li>
+</ul>
 <h3 id="release-33">Release 33</h3>
 <ul>
 <li>significant performance optimizations</li>
@@ -337,7 +354,7 @@
 <li>support for raster IRQs</li>
 </ul></li>
 <li>SDL controller support using <code>-joy1</code> and <code>-joy2</code> [John J Bliss]</li>
-<li>65C02 BSD fixes [Norman B. Lancaster]</li>
+<li>65C02 BCD fixes [Norman B. Lancaster]</li>
 <li>feature parity with new LOAD/VLOAD features [John-Paul Gignac]</li>
 <li>default RAM and ROM banks are now 0, matching the hardware</li>
 <li>GIF recording can now be controlled from inside the machine [Randall Bohn]</li>

@@ -108,33 +108,33 @@ make install PREFIX=~/.local
 <tbody>
 <tr class="odd">
 <td>0</td>
+<td>KERNAL</td>
+<td>character sets (uploaded into VRAM), MONITOR, KERNAL</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>KEYBD</td>
+<td>Keyboard layout tables</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>CBDOS</td>
+<td>The computer-based CBM-DOS for FAT32 SD cards</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>GEOS</td>
+<td>GEOS KERNAL</td>
+</tr>
+<tr class="odd">
+<td>4</td>
 <td>BASIC</td>
 <td>BASIC interpreter</td>
 </tr>
 <tr class="even">
-<td>1-3</td>
+<td>5-7</td>
 <td>–</td>
 <td><em>[Currently unused]</em></td>
-</tr>
-<tr class="odd">
-<td>4</td>
-<td>GEOS</td>
-<td>GEOS KERNAL</td>
-</tr>
-<tr class="even">
-<td>5</td>
-<td>CBDOS</td>
-<td>The computer-based CBM-DOS for FAT32 SD cards</td>
-</tr>
-<tr class="odd">
-<td>6</td>
-<td>KEYMAP</td>
-<td>Keyboard layout tables</td>
-</tr>
-<tr class="even">
-<td>7</td>
-<td>KERNAL</td>
-<td>character sets (uploaded into VRAM), MONITOR, KERNAL</td>
 </tr>
 </tbody>
 </table>
@@ -156,13 +156,49 @@ make install PREFIX=~/.local
 <p>KERNAL, BASIC and GEOS additions, DOS: Michael Steil, <a href="https://www.pagetable.com/">www.pagetable.com</a>; 2-clause BSD license</p>
 <p>FAT32 and SD card drivers: Copyright (c) 2018 Thomas Woinke, Marko Lauke, <a href="https://steckschwein.de">www.steckschein.de</a>; MIT License</p>
 <h2 id="release-notes">Release Notes</h2>
+<h3 id="release-34">Release 34</h3>
+<ul>
+<li>new layout for zero page and KERNAL/BASIC variables:
+<ul>
+<li>$00-$7F available to the user</li>
+<li>($02-$52 are used if using BASIC graphics commands)</li>
+<li>$80-$A3 used by KERNAL and DOS</li>
+<li>$A4-$A8 reserved for KERNAL/DOS/BASIC</li>
+<li>$A9-$FF used by BASIC</li>
+</ul></li>
+<li>new BASIC statements:
+<ul>
+<li>SCREEN <mode> (0: 40x30, 2: 80x60, 128: graphics)</li>
+<li>PSET <x>, <y>, <color></li>
+<li>LINE <x1>, <y1>, <x2>, <y2>, <color></li>
+<li>FRAME <x1>, <y1>, <x2>, <y2>, <color></li>
+<li>RECT <x1>, <y1>, <x2>, <y2>, <color></li>
+<li>CHAR <x>, <y>, <color>, <string></li>
+<li>MOUSE <n> (0: off, 1: on)</li>
+</ul></li>
+<li>new BASIC functions:
+<ul>
+<li>MX (mouse X coordinate)</li>
+<li>MY (mouse Y coordinate)</li>
+<li>MB (mouse button; 1: left, 2: right, 4: third)</li>
+</ul></li>
+<li>new KERNAL calls:
+<ul>
+<li>MOUSE: configure mouse</li>
+<li>SCRMOD: set screen mode</li>
+</ul></li>
+<li>new PS/2 mouse driver</li>
+<li>charsets are uploaded to VERA on demand</li>
+<li>GEOS font rendering uses less slant for faux italics characters</li>
+<li>misc GEOS KERNAL improvements and optimizations</li>
+</ul>
 <h3 id="release-33">Release 33</h3>
 <ul>
 <li>BASIC
 <ul>
 <li>additional LOAD syntax to load to a specific address <code>LOAD [filename[,device[,bank,address]]]</code></li>
 <li>LOAD into banked RAM will auto-wrap into successive banks</li>
-<li>LOAD allows trailing gargabe; great to just type "LOAD" into a directory line [John-Paul Gignac]</li>
+<li>LOAD allows trailing garbage; great to just type "LOAD" into a directory line [John-Paul Gignac]</li>
 <li>new BASIC statement: VLOAD to load into video RAM: <code>VLOAD [filename[,device[,bank,address]]]</code> [John-Paul Gignac]</li>
 <li>complete jump table bridge</li>
 </ul></li>
