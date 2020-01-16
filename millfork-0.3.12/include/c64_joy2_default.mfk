@@ -1,5 +1,0 @@
-// set C64 joystick in port 2 as the default
-
-import c64_joy
-
-alias read_joy = read_joy2

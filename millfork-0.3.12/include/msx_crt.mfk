@@ -1,5 +1,0 @@
-const array __header[16] @$4000 = [
-    "AB" ascii,
-    @word [main.addr, 0, 0, 0],
-    0,0, 0,0, 0,0
-]

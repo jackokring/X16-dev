@@ -24,12 +24,14 @@
 <p><a href="https://travis-ci.org/commanderx16/x16-emulator"><img src="https://travis-ci.org/commanderx16/x16-emulator.svg?branch=master" alt="Build Status" /></a> <a href="https://github.com/commanderx16/x16-emulator/releases"><img src="https://img.shields.io/github/v/release/commanderx16/x16-emulator" alt="Release" /></a> <a href="./LICENSE"><img src="https://img.shields.io/github/license/commanderx16/x16-emulator" alt="License: BSD-Clause" /></a> <a href="https://github.com/commanderx16/x16-emulator/graphs/contributors"><img src="https://img.shields.io/github/contributors/commanderx16/x16-emulator.svg" alt="Contributors" /></a></p>
 <p>This is an emulator for the Commander X16 computer system. It only depends on SDL2 and should compile on all modern operating systems.</p>
 <h2 id="binaries--compiling">Binaries &amp; Compiling</h2>
-<p>Binary releases for MacOS, Windows and x86_64 Linux are available on the <a href="https://github.com/commanderx16/x16-emulator/releases">releases page</a>.</p>
+<p>Binary releases for macOS, Windows and x86_64 Linux are available on the <a href="https://github.com/commanderx16/x16-emulator/releases">releases page</a>.</p>
 <p>The emulator itself is dependent only on SDL2. However, to run the emulated system you will also need a compatible <code>rom.bin</code> ROM image. This will be loaded from the directory containing the emulator binary, or you can use the <code>-rom .../path/to/rom.bin</code> option.</p>
 <blockquote>
 <p><strong>WARNING:</strong> Older versions of the ROM might not work in newer versions of the emulator, and vice versa.</p>
 </blockquote>
-<p>You can build a ROM image yourself using the <a href="https://github.com/commanderx16/x16-rom#releases-and-building">build instructions</a> in the <a href="https://github.com/commanderx16/x16-rom">x16rom</a> repo. The <code>rom.bin</code> included in the <a href="https://github.com/commanderx16/x16-emulator/releases"><em>latest</em> release</a> of the emulator may also work with the HEAD of this repo, but this is not guaranteed.</p>
+<p>You can build a ROM image yourself using the <a href="https://github.com/commanderx16/x16-rom#releases-and-building">build instructions</a> in the [x16-rom] repo. The <code>rom.bin</code> included in the <a href="https://github.com/commanderx16/x16-emulator/releases"><em>latest</em> release</a> of the emulator may also work with the HEAD of this repo, but this is not guaranteed.</p>
+<h3 id="macos-build">macOS Build</h3>
+<p>Install SDL2 using <code>brew install sdl2</code>.</p>
 <h3 id="linux-build">Linux Build</h3>
 <p>The SDL2 development package is available as a distribution package with most major versions of Linux:</p>
 <ul>
@@ -46,13 +48,14 @@
 <li>The system ROM filename/path can be overridden with the <code>-rom</code> command line argument.</li>
 <li><code>-keymap</code> tells the KERNAL to switch to a specific keyboard layout. Use it without an argument to view the supported layouts.</li>
 <li><code>-sdcard</code> lets you specify an SD card image (partition table + FAT32).</li>
+<li><code>-uart-in</code> and <code>-uart-out</code> lets you specify files for RS232 input and output</li>
 <li><code>-prg</code> lets you specify a <code>.prg</code> file that gets injected into RAM after start.</li>
 <li><code>-bas</code> lets you specify a BASIC program in ASCII format that automatically typed in (and tokenized).</li>
 <li><code>-run</code> executes the application specified through <code>-prg</code> or <code>-bas</code> using <code>RUN</code> or <code>SYS</code>, depending on the load address.</li>
+<li><code>-geos</code> launches GEOS at startup.</li>
 <li><code>-scale</code> scales video output to an integer multiple of 640x480</li>
 <li><code>-echo</code> causes all KERNAL/BASIC output to be printed to the host's terminal. Enable this and use the BASIC command "LIST" to convert a BASIC program to ASCII (detokenize).</li>
 <li><code>-gif &lt;filename&gt;[,wait]</code> to record the screen into a GIF. See below for more info.</li>
-<li><code>-scale</code> scales video output to an integer multiple of 640x480</li>
 <li><code>-quality</code> change image scaling algorithm quality
 <ul>
 <li><code>nearest</code>: nearest pixel sampling</li>
@@ -203,22 +206,22 @@
 </table>
 <h2 id="functions-while-running">Functions while running</h2>
 <ul>
-<li>Ctrl + R will reset the computer.</li>
-<li>Ctrl + V will paste the clipboard by injecting key presses.</li>
-<li>Ctrl + S will save a system dump (configurable with <code>-dump</code>) to disk.</li>
-<li>Ctrl + Return will toggle full screen mode.</li>
+<li><code>Ctrl + R</code> will reset the computer.</li>
+<li><code>Ctrl + V</code> will paste the clipboard by injecting key presses.</li>
+<li><code>Ctrl + S</code> will save a system dump (configurable with <code>-dump</code>) to disk.</li>
+<li><code>Ctrl + Return</code> will toggle full screen mode.</li>
 </ul>
-<p>On the Mac, use the Cmd key instead.</p>
+<p>On the Mac, use the <code>Cmd</code> key instead.</p>
 <h2 id="gif-recording">GIF Recording</h2>
 <p>With the argument <code>-gif</code>, followed by a filename, a screen recording will be saved into the given GIF file. Please exit the emulator before reading the GIF file.</p>
 <p>If the option <code>,wait</code> is specified after the filename, it will start recording on <code>POKE $9FB5,2</code>. It will capture a single frame on <code>POKE $9FB5,1</code> and pause recording on <code>POKE $9FB5,0</code>. <code>PEEK($9FB5)</code> returns a 128 if recording is enabled but not active.</p>
 <h2 id="basic-and-the-screen-editor">BASIC and the Screen Editor</h2>
 <p>On startup, the X16 presents direct mode of BASIC V2. You can enter BASIC statements, or line numbers with BASIC statements and <code>RUN</code> the program, just like on Commodore computers.</p>
 <ul>
-<li>To stop execution of a BASIC program, hit the RUN/STOP key (Esc in the emulator), or Ctrl + C.</li>
-<li>To insert a character, press Shift + Backspace.</li>
-<li>To clear the screen, press Shift + Home.</li>
-<li>The X16 does not have a STOP+RESTORE function.</li>
+<li>To stop execution of a BASIC program, hit the <code>RUN/STOP</code> key (<code>Esc</code> in the emulator), or <code>Ctrl + C</code>.</li>
+<li>To insert characters, first insert spaces by pressing <code>Shift + Backspaces</code>, then type over those spaces.</li>
+<li>To clear the screen, press <code>Shift + Home</code>.</li>
+<li>The X16 does not have a <code>STOP + RESTORE</code> function.</li>
 </ul>
 <h2 id="host-filesystem-interface">Host Filesystem Interface</h2>
 <p>If the system ROM contains any version of the KERNAL, the LOAD (<code>$FFD5</code>) and SAVE (<code>$FFD8</code>) KERNAL calls are intercepted by the emulator if the device is 1 (which is the default). So the BASIC statements</p>
@@ -228,19 +231,46 @@
   SAVE&quot;BAR.PRG
 </code></pre>
 <p>will target the host computer's local filesystem.</p>
-<p>The emulator will interpret filesnames relative to the directory it was started in. Note that on macOS, when double-clicking the executable, this is the home directory.</p>
+<p>The emulator will interpret filenames relative to the directory it was started in. Note that on macOS, when double-clicking the executable, this is the home directory.</p>
 <p>To avoid incompatibility problems between the PETSCII and ASCII encodings, use lower case filenames on the host side, and unshifted filenames on the X16 side.</p>
 <h2 id="dealing-with-basic-programs">Dealing with BASIC Programs</h2>
 <p>BASIC programs are encoded in a tokenized form, they are not simply ASCII files. If you want to edit BASIC programs on the host's text editor, you need to convert it between tokenized BASIC form and ASCII.</p>
 <ul>
-<li>To convert ASCII to BASIC, reboot the machine and paste the ASCII text using Ctrl + V (Mac: Cmd + V). You can now run the program, or use the <code>SAVE</code> BASIC command to write the tokenized version to disk.</li>
-<li>To convert BASIC to ASCII, start x16emu with the -echo argument, <code>LOAD</code> the BASIC file, and type <code>LIST</code>. Now copy the ASCII version from the terminal.</li>
+<li>To convert ASCII to BASIC, reboot the machine and paste the ASCII text using <code>Ctrl + V</code> (Mac: <code>Cmd + V</code>). You can now run the program, or use the <code>SAVE</code> BASIC command to write the tokenized version to disk.</li>
+<li>To convert BASIC to ASCII, start x16emu with the <code>-echo</code> argument, <code>LOAD</code> the BASIC file, and type <code>LIST</code>. Now copy the ASCII version from the terminal.</li>
 </ul>
 <h2 id="using-the-kernalbasic-environment">Using the KERNAL/BASIC environment</h2>
 <p>Please see the KERNAL/BASIC documentation.</p>
 <h2 id="debugger">Debugger</h2>
 <p>The debugger requires <code>-debug</code> to start. Without it it is effectively disabled.</p>
-<p>There are 2 panels you can control. The code panel, the top left half, and the data panel, the bottom half of the screen. The displayed address can be changed using keys 0-9 and A-F, in a 'shift and roll' manner (easier to see than explain). To change the data panel address, press the shift key and type 0-9 A-F. The top write panel is fixed.</p>
+<p>There are 2 panels you can control. The code panel, the top left half, and the data panel, the bottom half of the screen. You can also edit the contents of the registers PC, A, X, Y, and SP.</p>
+<p>The debugger uses its own command line with the following syntax:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Statement</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>d %x</td>
+<td>Change the code panel to view disassembly starting from the address %x.</td>
+</tr>
+<tr class="even">
+<td>m %x</td>
+<td>Change the data panel to view memory starting from the address %x.</td>
+</tr>
+<tr class="odd">
+<td>b %s %d</td>
+<td>Changes the current memory bank for disassembly and data. The %s param can be either 'ram' or 'rom', the %d is the memory bank to display.</td>
+</tr>
+<tr class="even">
+<td>r %s %x</td>
+<td>Changes the value in the specified register. Valid registers in the %s param are 'pc', 'a', 'x', 'y', and 'sp'. %x is the value to store in that register.</td>
+</tr>
+</tbody>
+</table>
 <p>The debugger keys are similar to the Microsoft Debugger shortcut keys, and work as follows</p>
 <table>
 <thead>
@@ -284,7 +314,7 @@
 </tr>
 </tbody>
 </table>
-<p>When -debug is selected the No-Operation $FF will break into the debugger automatically.</p>
+<p>When <code>-debug</code> is selected the No-Operation $FF will break into the debugger automatically.</p>
 <p>Effectively keyboard routines only work when the debugger is running normally. Single stepping through keyboard code will not work at present.</p>
 <h2 id="wiki">Wiki</h2>
 <p><a href="https://github.com/commanderx16/x16-emulator/wiki">https://github.com/commanderx16/x16-emulator/wiki</a></p>
@@ -317,10 +347,8 @@
 <li>VERA
 <ul>
 <li>Does not support the "CURRENT_FIELD" bit</li>
-<li>Does not sprite collisions</li>
-<li><ul>
+<li>Does not support sprite collisions</li>
 <li>Interlaced modes (NTSC/RGB) don't render at the full horizontal fidelity</li>
-</ul></li>
 </ul></li>
 <li>VIA
 <ul>
@@ -335,9 +363,40 @@
 <p>Copyright (c) 2019 Michael Steil &lt;<a href="mailto:mist64@mac.com">mist64@mac.com</a>&gt;, <a href="https://www.pagetable.com/">www.pagetable.com</a>. All rights reserved. License: 2-clause BSD</p>
 <h2 id="known-issues">Known Issues</h2>
 <ul>
-<li>Emulator: LOAD"$ (and LOAD"$",1) will show host uppercase filenames as garbage. Use Ctrl+N to switch to the X16 upper/lower character set for a workaround.</li>
+<li>Emulator: <code>LOAD"$</code> (and <code>LOAD"$",1</code>) will show host uppercase filenames as garbage. Use <code>Ctrl+N</code> to switch to the X16 upper/lower character set for a workaround.</li>
 </ul>
 <h2 id="release-notes">Release Notes</h2>
+<h3 id="release-36-berlin">Release 36 ("Berlin")</h3>
+<ul>
+<li>added VERA UART emulation (<code>-uart-in</code>, <code>-uart-out</code>)</li>
+<li>correctly emulate missing SD card</li>
+<li>moved host filesystem interface from device 1 to device 8, only available if no SD card is attached</li>
+<li>require numeric argument for <code>-test</code> to auto-run test</li>
+<li>fixed JMP (a,x) for 65c02</li>
+<li>Fixed ESC as RUN/STOP [Ingo Hinterding]</li>
+</ul>
+<h3 id="release-35">Release 35</h3>
+<ul>
+<li>video optimization [Neil Forbes-Richardson]</li>
+<li>added <code>-geos</code> to launch GEOS on startup</li>
+<li>added <code>-test</code> to launch (graphics) unit test on startup</li>
+<li>debugger
+<ul>
+<li>switch viewed RAM/ROM bank with <code>numpad +</code> and <code>numpad -</code> [Kobrasadetin]</li>
+<li>optimized character printing [Kobrasadetin]</li>
+</ul></li>
+<li>trace mode:
+<ul>
+<li>prepend ROM bank to address in trace</li>
+<li>also prints 16 bit virtual regs (graph/GEOS)</li>
+</ul></li>
+<li>fixes
+<ul>
+<li>initialize memory to 0 [Kobrasadetin]</li>
+<li>fixed SYS hex argument</li>
+<li>disabled "buffer full, skipping" and SD card debug text, it was too noisy</li>
+</ul></li>
+</ul>
 <h3 id="release-34">Release 34</h3>
 <ul>
 <li>PS/2 mouse</li>
@@ -361,9 +420,9 @@
 <li>Debugging
 <ul>
 <li>Major enhancements to the debugger [kktos]</li>
-<li><code>-echo</code> will now encode non-printable characters like this: \X93 for CHR$(93), -bas as well as pasting accepts this convention again</li>
+<li><code>-echo</code> will now encode non-printable characters like this: \X93 for CHR$(93), <code>-bas</code> as well as pasting accepts this convention again</li>
 <li><code>-echo raw</code> for the original behavior</li>
-<li><code>-echo iso</code> to for correct character encoding in ISO mode</li>
+<li><code>-echo iso</code> for correct character encoding in ISO mode</li>
 <li><code>-ram</code> to specify RAM size; now defaults to 512</li>
 </ul></li>
 </ul>
@@ -382,27 +441,27 @@
 <h3 id="release-31">Release 31</h3>
 <ul>
 <li>VERA 0.8 register layout</li>
-<li>removed "-char" (character ROM is now part of rom.bin)</li>
-<li>GIF recording using -gif [Neil Forbes-Richardson]</li>
+<li>removed <code>-char</code> (character ROM is now part of <code>rom.bin</code>)</li>
+<li>GIF recording using <code>-gif</code> [Neil Forbes-Richardson]</li>
 <li>numpad support [Maurizio Porrato]</li>
 <li>fake support of VIA timers to work around BASIC RND(0)</li>
 <li>default ROM is taken from executable's directory [Michael Watters]</li>
 <li>emulator window has a title [Michael Watters]</li>
-<li>-debug allows specifying a breakpoint [Frank Buss]</li>
-<li>package contains the ROM symbols in rom.txt</li>
+<li><code>-debug</code> allows specifying a breakpoint [Frank Buss]</li>
+<li>package contains the ROM symbols in <code>rom.txt</code></li>
 <li>support for VERA SPI</li>
 </ul>
 <h3 id="release-30">Release 30</h3>
 <p>Emulator:</p>
 <ul>
 <li>VERA can now generate VSYNC interrupts</li>
-<li>added -keymap for setting the keyboard layout</li>
-<li>added -scale for integer scaling of the window [Stephen Horn]</li>
-<li>added -log to enable various logging features (can also be enabled at runtime (POKE $9FB0+) [Randall Bohn])</li>
-<li>changed -run to be an option to -prg and -bas</li>
+<li>added <code>-keymap</code> for setting the keyboard layout</li>
+<li>added <code>-scale</code> for integer scaling of the window [Stephen Horn]</li>
+<li>added <code>-log</code> to enable various logging features (can also be enabled at runtime (POKE $9FB0+) [Randall Bohn])</li>
+<li>changed <code>-run</code> to be an option to <code>-prg</code> and <code>-bas</code></li>
 <li>emulator detection: read $9FBE/$9FBF, must read 0x31 and 0x36</li>
-<li>fix: -prg and -run no longer corrupt BASIC programs.</li>
-<li>fix: LOAD,1 into RAM bank [Stephen Horn]</li>
+<li>fix: <code>-prg</code> and <code>-run</code> no longer corrupt BASIC programs.</li>
+<li>fix: <code>LOAD,1</code> into RAM bank [Stephen Horn]</li>
 <li>fix: 2bpp and 4bpp drawing [Stephen Horn]</li>
 <li>fix: 4bpp sprites [MonstersGoBoom]</li>
 <li>fix: build on Linux/ARM</li>
@@ -410,14 +469,14 @@
 <h3 id="release-29">Release 29</h3>
 <ul>
 <li>better keyboard support: if you pretend you have a US keyboard layout when typing, all keys should now be reachable [Paul Robson]</li>
-<li>-debug will enable the new debugger [Paul Robson]</li>
+<li><code>-debug</code> will enable the new debugger [Paul Robson]</li>
 <li>runs at the correct speed (was way too slow on most machines)</li>
-<li>keyboard shortcuts work on Windows/Linux: Ctrl + F/R/S/V</li>
-<li>Ctrl + V pastes the clipboard as keypresses</li>
-<li>-bas file.txt loads a BASIC program in ASCII encoding</li>
-<li>-echo prints all BASIC/KERNAL output to the terminal, use it with LIST to convert a BASIC program to ASCII</li>
-<li>-run acts like -prg, but also autostarts the program</li>
-<li>JMP $FFFF and SYS 65535 exit the emulator and save memory the host's storage</li>
+<li>keyboard shortcuts work on Windows/Linux: <code>Ctrl + F/R/S/V</code></li>
+<li><code>Ctrl + V</code> pastes the clipboard as keypresses</li>
+<li><code>-bas file.txt</code> loads a BASIC program in ASCII encoding</li>
+<li><code>-echo</code> prints all BASIC/KERNAL output to the terminal, use it with LIST to convert a BASIC program to ASCII</li>
+<li><code>-run</code> acts like <code>-prg</code>, but also autostarts the program</li>
+<li><code>JMP $FFFF</code> and <code>SYS 65535</code> exit the emulator and save memory into the host's storage</li>
 <li>the packages now contain the current version of the Programmer's Reference Guide (HTML)</li>
 <li>fix: on Windows, some file load/saves may be been truncated</li>
 </ul>
@@ -431,7 +490,7 @@
 <ul>
 <li>Command line overhaul. Supports <code>-rom</code>, <code>-char</code>, <code>-sdcard</code> and <code>-prg</code>.</li>
 <li>ROM and char filename defaults, so x16emu can be started without arguments.</li>
-<li>Host Filesystem Interface supports LOAD"$"</li>
+<li>Host Filesystem Interface supports <code>LOAD"$"</code></li>
 <li>macOS and Windows packaging logic in Makefile</li>
 </ul>
 <h3 id="release-26">Release 26</h3>
@@ -442,10 +501,10 @@
 </ul>
 <h3 id="release-25">Release 25</h3>
 <ul>
-<li>sdcard: fixed LOAD,x,1 to load to the correct addressg</li>
+<li>sdcard: fixed <code>LOAD,x,1</code> to load to the correct addressg</li>
 <li>sdcard: all temp data will be on bank #255; current bank will remain unchanged</li>
 <li>DOS: support for DOS commands ("UI", "I", "V", ...) and more status messages (e.g. 26,WRITE PROTECT ON,00,00)</li>
-<li>BASIC: "DOS" command. Without argument: print disk status; with "$" argument: show directory; with "8" or "9" argument: switch default drive; otherwise: send DOS command; also accessible through F7/F8</li>
+<li>BASIC: <code>DOS</code> command. Without argument: print disk status; with "$" argument: show directory; with "8" or "9" argument: switch default drive; otherwise: send DOS command; also accessible through F7/F8</li>
 <li>Vera: cycle exact rendering, NTSC, interlacing, border</li>
 </ul>
 <h3 id="release-24">Release 24</h3>
@@ -471,12 +530,12 @@
 </ul>
 <h3 id="release-20">Release 20</h3>
 <ul>
-<li>Toggle fullscreen using Cmd+F or Cmd+return</li>
+<li>Toggle fullscreen using <code>Cmd + F</code> or <code>Cmd + return</code></li>
 <li>new BASIC instructions and functions:
 <ul>
-<li>MON: enter monitor; no more SYS65280 required</li>
-<li>VPEEK(bank, address)</li>
-<li>VPOKE bank, address, value example: VPOKE4,0,VPEEK(4,0) OR 32 [for 256 color BASIC]</li>
+<li><code>MON</code>: enter monitor; no more SYS65280 required</li>
+<li><code>VPEEK(bank, address)</code></li>
+<li><code>VPOKE bank, address, value</code> example: <code>VPOKE4,0,VPEEK(4,0) OR 32</code> [for 256 color BASIC]</li>
 </ul></li>
 </ul>
 <h3 id="release-19">Release 19</h3>
@@ -496,7 +555,7 @@
 </ul>
 <h3 id="release-16">Release 16</h3>
 <ul>
-<li>Integrated monitor, start with SYS65280 rom.bin is now 3*8 KB:
+<li>Integrated monitor, start with SYS65280 <code>rom.bin</code> is now 3*8 KB:
 <ul>
 <li>0: BASIC (bank 0 at $C000)</li>
 <li>1: KERNAL ($E000)</li>
@@ -548,7 +607,7 @@ SAVE&quot;TETRIS.PRG
 </ul>
 <h3 id="release-7">Release 7</h3>
 <ul>
-<li>Now with banking. POKE40801,n to switch the RAM bank at $A000. POKE40800,n to switch the ROM bank at $C000. The ROM file at the command line can be up to 72 KB now (layout: 0: bank 0, 1: KERNAL, 2: bank 1, 3: bank 2 etc.), and the RAM that Cmd+S saves is 2088KB ($0000-$9F00: regular RAM, $9F00-$9FFF: unused, $A000+: extra banks)</li>
+<li>Now with banking. <code>POKE40801,n</code> to switch the RAM bank at $A000. <code>POKE40800,n</code> to switch the ROM bank at $C000. The ROM file at the command line can be up to 72 KB now (layout: 0: bank 0, 1: KERNAL, 2: bank 1, 3: bank 2 etc.), and the RAM that <code>Cmd + S</code> saves is 2088KB ($0000-$9F00: regular RAM, $9F00-$9FFF: unused, $A000+: extra banks)</li>
 </ul>
 <h3 id="release-6">Release 6</h3>
 <ul>
@@ -560,7 +619,7 @@ SAVE&quot;TETRIS.PRG
 </ul>
 <h3 id="release-4">Release 4</h3>
 <ul>
-<li>Cmd+S now saves all of memory (linear 64 KB for now, including ROM) to "memory.bin", "memory-1.bin", "memory-2.bin", etc. You can extract parts of it with Unix "dd", like: dd if=memory.bin of=basic.bin bs=1 skip=2049 count=38655</li>
+<li><code>Cmd + S</code> now saves all of memory (linear 64 KB for now, including ROM) to <code>memory.bin</code>, <code>memory-1.bin</code>, <code>memory-2.bin</code>, etc. You can extract parts of it with Unix "dd", like: <code>dd if=memory.bin of=basic.bin bs=1 skip=2049 count=38655</code></li>
 </ul>
 <h3 id="release-3">Release 3</h3>
 <ul>

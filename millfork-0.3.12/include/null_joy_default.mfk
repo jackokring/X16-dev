@@ -1,5 +1,0 @@
-// set no joystick as the default
-
-import joy
-
-alias read_joy = reset_joy
